@@ -1,0 +1,12 @@
+# Build output
+build/
+
+# Local snapshot from before the GUI redesign (history lives in git now)
+backup_before_gui_redesign/
+
+# IDE / OS
+.vs/
+.vscode/
+*.user
+Thumbs.db
+.DS_Store
