@@ -13,6 +13,15 @@ Mutadrums is built on the work of **Émilie Gillet**, who designed the Mutable I
 | **Plaits** | 2016 | The 808 and 909-style kick and snare models, the hi-hat model, the modal resonator and the clap. |
 | **Braids** | 2012 | The Braids percussion voices: kick, snare, cymbal and bell. |
 
+Following Mutable Instruments' guidelines for derivative works, Mutadrums doesn't reuse the module names for its own parts:
+
+| In Mutadrums | Based on |
+|---|---|
+| **Topo** pattern generator | Grids |
+| **Chance** random generator | Marbles |
+| Analog / Synth Kick, Analog / Synth Snare, Closed / Open Hat, Modal Resonator, Clap | Plaits |
+| Pulse Kick, Resonant Snare, Metal Cymbal, Additive Bell | Braids |
+
 The ideas, the sound and the musical thinking behind these modules are Émilie's; any mistakes in this adaptation are mine. **Thank you, Émilie.**
 
 > Mutable Instruments is a registered trademark. Mutadrums is an independent project by mtyas. It is not affiliated with or endorsed by Mutable Instruments or Émilie Gillet. Module names are used only to credit where the ideas come from.

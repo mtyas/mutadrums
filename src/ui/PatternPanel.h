@@ -24,8 +24,8 @@ public:
         ay_ = std::make_unique<juce::ParameterAttachment>(*py, [this](float v) { y_ = v; repaint(); }, um);
         ax_->sendInitialUpdate();
         ay_->sendInitialUpdate();
-        setTooltip("Drag to morph between the 25 drum patterns of the Grids map. "
-                   "The teal ring shows where Marbles modulation is currently pushing it.");
+        setTooltip("Drag to morph between the 25 drum patterns of the Topo map. "
+                   "The teal ring shows where Chance modulation is currently pushing it.");
         setMouseCursor(juce::MouseCursor::CrosshairCursor);
     }
 
@@ -125,7 +125,7 @@ class GridsStepView : public juce::Component, public juce::SettableTooltipClient
 public:
     explicit GridsStepView(APVTS& s) : state_(s) {
         setTooltip("Pattern preview for the current map position and densities. "
-                   "Bright cells are accents. Chaos and Marbles modulation add variations on top.");
+                   "Bright cells are accents. Chaos and Chance modulation add variations on top.");
     }
 
     void update(int step, bool running, const std::array<bool, 3>& hits) {
@@ -336,16 +336,16 @@ public:
         model_.combo.setTooltip("Coin Toss: t2 is a steady clock, t1/t3 flip a biased coin.\n"
                                 "Polyrhythm: 3-against-4 cross rhythms.\nDrums: generative kick/snare/hat roles.");
         addAndMakeVisible(marbles_);
-        knob(mRate_, ID::marblesRate, "Marbles clock relative to 16th notes.", Theme::marblesT(0));
-        knob(mJitter_, ID::marblesJitter, "Humanise: randomly delays Marbles hits.", Theme::marblesT(1));
+        knob(mRate_, ID::marblesRate, "Chance clock relative to 16th notes.", Theme::marblesT(0));
+        knob(mJitter_, ID::marblesJitter, "Humanise: randomly delays Chance hits.", Theme::marblesT(1));
         knob(mBias_, ID::marblesBias, "Tilts the coin toss towards t1 or t3, and the X voltages low/high.", Theme::marblesT(2));
         knob(mDeja_, ID::marblesDejaVu, "0% = always new random decisions. 100% = locked loop that repeats.", Theme::accent);
         knob(mLen_, ID::marblesLength, "Length of the Deja-Vu loop in steps.", Theme::accent);
 
-        knob(mX_, ID::modGridsX, "Marbles X1 moves the map X position.", Theme::mod);
-        knob(mY_, ID::modGridsY, "Marbles X2 moves the map Y position.", Theme::mod);
-        knob(mC_, ID::modGridsChaos, "Marbles X3 adds/removes chaos.", Theme::mod);
-        knob(mD_, ID::modGridsDens, "Marbles t1 gate pushes all densities up when it fires.", Theme::mod);
+        knob(mX_, ID::modGridsX, "Chance X1 moves the map X position.", Theme::mod);
+        knob(mY_, ID::modGridsY, "Chance X2 moves the map Y position.", Theme::mod);
+        knob(mC_, ID::modGridsChaos, "Chance X3 adds/removes chaos.", Theme::mod);
+        knob(mD_, ID::modGridsDens, "Chance t1 gate pushes all densities up when it fires.", Theme::mod);
         for (auto* k : { &mX_, &mY_, &mC_, &mD_ }) k->setBipolar(true);
 
         modeAttachment_ = std::make_unique<juce::ParameterAttachment>(
@@ -371,11 +371,11 @@ public:
     }
 
     void paint(juce::Graphics& g) override {
-        Theme::panelBox(g, gridsArea_.toFloat(), "Grids  -  pattern generator");
-        Theme::panelBox(g, marblesArea_.toFloat(), "Marbles  -  random generator");
+        Theme::panelBox(g, gridsArea_.toFloat(), "Topo - pattern generator");
+        Theme::panelBox(g, marblesArea_.toFloat(), "Chance - random generator");
         g.setColour(Theme::textFaint);
         g.setFont(Theme::font(9.5f, true));
-        g.drawText("MARBLES MODULATES GRIDS", modLabel_, juce::Justification::centredLeft);
+        g.drawText("CHANCE MODULATES TOPO", modLabel_, juce::Justification::centredLeft);
         g.setColour(Theme::outline);
         g.drawHorizontalLine(modLabel_.getCentreY(), static_cast<float>(modLabel_.getX() + 140), static_cast<float>(modLabel_.getRight()));
     }

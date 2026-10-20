@@ -214,14 +214,14 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
 
     // ---- Grids
     {
-        auto g = std::make_unique<juce::AudioProcessorParameterGroup>("grids", "Grids", " | ");
-        g->addChild(fl(ID::gridsX, "Grids Map X", Range(0, 1), 0.5f, pctText));
-        g->addChild(fl(ID::gridsY, "Grids Map Y", Range(0, 1), 0.5f, pctText));
-        g->addChild(fl(ID::gridsChaos, "Grids Chaos", Range(0, 1), 0.0f, pctText));
-        g->addChild(fl(ID::gridsDensBD, "Grids BD Density", Range(0, 1), 0.6f, pctText));
-        g->addChild(fl(ID::gridsDensSD, "Grids SD Density", Range(0, 1), 0.5f, pctText));
-        g->addChild(fl(ID::gridsDensHH, "Grids HH Density", Range(0, 1), 0.7f, pctText));
-        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::gridsMode, 1 }, "Grids Mode",
+        auto g = std::make_unique<juce::AudioProcessorParameterGroup>("grids", "Topo", " | ");
+        g->addChild(fl(ID::gridsX, "Topo Map X", Range(0, 1), 0.5f, pctText));
+        g->addChild(fl(ID::gridsY, "Topo Map Y", Range(0, 1), 0.5f, pctText));
+        g->addChild(fl(ID::gridsChaos, "Topo Chaos", Range(0, 1), 0.0f, pctText));
+        g->addChild(fl(ID::gridsDensBD, "Topo BD Density", Range(0, 1), 0.6f, pctText));
+        g->addChild(fl(ID::gridsDensSD, "Topo SD Density", Range(0, 1), 0.5f, pctText));
+        g->addChild(fl(ID::gridsDensHH, "Topo HH Density", Range(0, 1), 0.7f, pctText));
+        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::gridsMode, 1 }, "Topo Mode",
                                           juce::StringArray{ "Topographic", "Euclidean" }, 0));
         g->addChild(fl(ID::gridsSwing, "Swing", Range(0.0f, 0.75f), 0.0f, pctText));
         g->addChild(std::make_unique<API>(juce::ParameterID{ ID::gridsLenBD, 1 }, "Euclid BD Length", 1, 32, 16));
@@ -236,13 +236,13 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
 
     // ---- Marbles
     {
-        auto g = std::make_unique<juce::AudioProcessorParameterGroup>("marbles", "Marbles", " | ");
-        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::marblesRate, 1 }, "Marbles Rate", marblesRateNames(), 2));
-        g->addChild(fl(ID::marblesJitter, "Marbles Jitter", Range(0, 1), 0.0f, pctText));
-        g->addChild(fl(ID::marblesBias, "Marbles Bias", Range(0, 1), 0.5f, pctText));
-        g->addChild(fl(ID::marblesDejaVu, "Marbles Deja Vu", Range(0, 1), 0.0f, pctText));
-        g->addChild(std::make_unique<API>(juce::ParameterID{ ID::marblesLength, 1 }, "Marbles Loop Length", 1, 16, 16));
-        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::marblesModel, 1 }, "Marbles Model",
+        auto g = std::make_unique<juce::AudioProcessorParameterGroup>("marbles", "Chance", " | ");
+        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::marblesRate, 1 }, "Chance Rate", marblesRateNames(), 2));
+        g->addChild(fl(ID::marblesJitter, "Chance Jitter", Range(0, 1), 0.0f, pctText));
+        g->addChild(fl(ID::marblesBias, "Chance Bias", Range(0, 1), 0.5f, pctText));
+        g->addChild(fl(ID::marblesDejaVu, "Chance Deja Vu", Range(0, 1), 0.0f, pctText));
+        g->addChild(std::make_unique<API>(juce::ParameterID{ ID::marblesLength, 1 }, "Chance Loop Length", 1, 16, 16));
+        g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::marblesModel, 1 }, "Chance Model",
                                           juce::StringArray{ "Coin Toss", "Polyrhythm", "Drums" }, 0));
         g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::lfoRate, 1 }, "LFO Rate", lfoRateNames(), 4));
         g->addChild(std::make_unique<APC>(juce::ParameterID{ ID::lfoShape, 1 }, "LFO Shape", lfoShapeNames(), 0));

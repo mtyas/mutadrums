@@ -148,7 +148,7 @@ public:
             p.category = "Init";
             p.author = "mtyas";
             p.description = "A blank starting point: raw 808/909-style kit, flat EQ, no drive, compression or effect sends. "
-                            "Kick, snare and closed hat follow Grids; the rest play from MIDI or the pads.";
+                            "Kick, snare and closed hat follow Topo; the rest play from MIDI or the pads.";
             p.formatVersion = 2;
             p.delayReturnDB = -14.0f;
             p.reverbReturnDB = -16.0f;
@@ -241,7 +241,7 @@ public:
             p.name = "Techno Raw Acid 303";
             p.category = "Techno";
             p.author = "mtyas";
-            p.description = "Gritty, overdriven underground warehouse acid with saturated transient kick, snappy claps, and Marbles chaos modulation.";
+            p.description = "Gritty, overdriven underground warehouse acid with saturated transient kick, snappy claps, and Chance chaos modulation.";
             p.bpm = 134.0f;
             p.gridsX = 0.78f; p.gridsY = 0.60f; p.gridsChaos = 0.25f;
             p.gridsDensity[0] = 0.8f; p.gridsDensity[1] = 0.6f; p.gridsDensity[2] = 0.85f;
@@ -329,7 +329,7 @@ public:
             p.name = "Techno Dark Industrial";
             p.category = "Techno";
             p.author = "mtyas";
-            p.description = "Crushing, distorted industrial rhythm section with overdriven Braids kicks and aggressive tube saturation.";
+            p.description = "Crushing, distorted industrial rhythm section with overdriven kicks and aggressive tube saturation.";
             p.bpm = 136.0f;
             p.gridsX = 0.88f; p.gridsY = 0.84f; p.gridsChaos = 0.32f;
             p.gridsDensity[0] = 0.82f; p.gridsDensity[1] = 0.70f; p.gridsDensity[2] = 0.88f;
@@ -530,7 +530,7 @@ public:
             p.name = "IDM Warp Generative";
             p.category = "IDM";
             p.author = "mtyas";
-            p.description = "Complex generative IDM beats with Marbles Bernoulli coin toss, modal inharmonicities, and modulated timbres.";
+            p.description = "Complex generative IDM beats with Chance Bernoulli coin toss, modal inharmonicities, and modulated timbres.";
             p.bpm = 120.0f;
             p.gridsX = 0.65f; p.gridsY = 0.25f; p.gridsChaos = 0.42f;
             p.marblesModel = 0; p.marblesDejaVu = 0.65f; p.marblesBias = 0.45f;
@@ -587,7 +587,7 @@ public:
             p.name = "IDM Chaos Theory";
             p.category = "IDM";
             p.author = "mtyas";
-            p.description = "Maximum Marbles jitter and bias modulation of Grids topographic map coordinates ($X, Y$), creating an evolving rhythm organism.";
+            p.description = "Maximum Chance jitter and bias modulation of Topo topographic map coordinates ($X, Y$), creating an evolving rhythm organism.";
             p.bpm = 115.0f;
             p.gridsX = 0.5f; p.gridsY = 0.5f; p.gridsChaos = 0.6f;
             p.gridsModMapX = 0.45f; p.gridsModMapY = 0.45f; p.gridsModChaos = 0.35f;
@@ -1022,7 +1022,7 @@ public:
             p.name = "Ambient Ethereal Diffusion";
             p.category = "Ambient";
             p.author = "mtyas";
-            p.description = "Slow floating rhythmic textures, generative random Marbles pulses, and atmospheric delays.";
+            p.description = "Slow floating rhythmic textures, generative random Chance pulses, and atmospheric delays.";
             p.bpm = 75.0f;
             p.gridsX = 0.20f; p.gridsY = 0.18f; p.gridsChaos = 0.20f;
             p.marblesRate = 0.75f; p.marblesDejaVu = 0.30f;

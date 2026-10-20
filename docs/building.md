@@ -10,7 +10,9 @@
 | CMake | 3.21 or newer | 3.21 or newer |
 | Git | any recent version | any recent version |
 
-> Windows is the tested platform. The macOS steps follow the standard JUCE/CMake workflow but haven't been verified yet; reports are welcome.
+> Every push to `main` is built for Windows, macOS (universal) and Linux by [GitHub Actions](../.github/workflows/build.yml); see that file for the exact steps on each platform.
+>
+> **Linux** needs these development packages (Debian/Ubuntu names): `libasound2-dev libjack-jackd2-dev ladspa-sdk libfreetype6-dev libfontconfig1-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libglu1-mesa-dev mesa-common-dev ninja-build`.
 
 ## Get the source
 

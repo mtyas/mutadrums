@@ -4,8 +4,8 @@
 
 - [Overview](#overview)
 - [Header](#header)
-- [Grids: pattern generator](#grids-pattern-generator)
-- [Marbles: random generator](#marbles-random-generator)
+- [Topo: pattern generator](#topo-pattern-generator)
+- [Chance: random generator](#chance-random-generator)
 - [Pads](#pads)
 - [VOICE page](#voice-page)
 - [Modulation](#modulation)
@@ -23,7 +23,7 @@
 
 Mutadrums has eight voices. Each voice has:
 
-1. a **trigger**: what makes it play (a Grids lane, a Marbles gate, or only MIDI and the pad),
+1. a **trigger**: what makes it play (a Topo lane, a Chance gate, or only MIDI and the pad),
 2. an **engine**: what it sounds like (one of 12 drum models),
 3. a **channel strip**: EQ, drive, compressor, level, pan, delay and reverb sends, and an output.
 
@@ -45,20 +45,20 @@ The window is resizable from its bottom-right corner, and the whole layout scale
 | **BPM** | Internal tempo. Drag it, or double-click to type a value. Shows the host tempo while synced. |
 | **MASTER** | Output volume of the Main output, with a stereo meter |
 
-## Grids: pattern generator
+## Topo: pattern generator
 
-Grids decides when the kick (**BD**), snare (**SD**) and hats (**HH**) play.
+Topo decides when the kick (**BD**), snare (**SD**) and hats (**HH**) play.
 
-- **Map XY pad.** Every point on the map is a drum pattern, and neighbouring points are related. Drag slowly to morph one groove into another. A teal ring shows where Marbles modulation is currently pushing the map.
+- **Map XY pad.** Every point on the map is a drum pattern, and neighbouring points are related. Drag slowly to morph one groove into another. A teal ring shows where Chance modulation is currently pushing the map.
 - **Density BD / SD / HH.** How busy each lane is. Low settings keep only the strongest hits.
 - **Chaos.** Adds random variations on top of the pattern.
 - **Swing.** Delays every second 16th note.
 - **32-step preview.** Shows exactly what will play. Accents are drawn brighter.
 - **Euclidean mode.** Each lane instead spreads its hits evenly across its own **Length** (1 to 32 steps), and Density sets how many hits.
 
-## Marbles: random generator
+## Chance: random generator
 
-Marbles produces three random **gate** streams (**t1, t2, t3**) and three random **voltages** (**X1, X2, X3**).
+Chance produces three random **gate** streams (**t1, t2, t3**) and three random **voltages** (**X1, X2, X3**).
 
 | Control | What it does |
 |---|---|
@@ -69,7 +69,7 @@ Marbles produces three random **gate** streams (**t1, t2, t3**) and three random
 | **Déjà Vu** | 0% = always new; higher values repeat the recent loop more often |
 | **Loop** | Length of the Déjà-Vu loop, 1 to 16 steps |
 
-**Marbles modulates Grids:** *X1 › Map X*, *X2 › Map Y*, *X3 › Chaos* and *t1 › Density* let the random voltages move the Grids map, so the groove wanders on its own.
+**Chance modulates Topo:** *X1 › Map X*, *X2 › Map Y*, *X3 › Chaos* and *t1 › Density* let the random voltages move the Topo map, so the groove wanders on its own.
 
 ## Pads
 
@@ -82,7 +82,7 @@ Everything about the selected voice.
 | Control | What it does |
 |---|---|
 | **Engine** | The sound model (see the table below) |
-| **Trigger** | *Grids BD/SD/HH*, *Marbles t1/t2/t3* or *MIDI / pad only* |
+| **Trigger** | *Topo BD/SD/HH*, *Chance t1/t2/t3* or *MIDI / pad only* |
 | **Choke** | Voices in the same group cut each other off, e.g. closed hat stops open hat |
 | **MIDI note** | The note that plays this voice |
 | **Tune** | Pitch, ±36 semitones |
@@ -94,24 +94,24 @@ Everything about the selected voice.
 
 | Engine | Tone | Character | Sound |
 |---|---|---|---|
-| Plaits Analog Kick | Tone | Drive | Bridged-T resonator with pitch dive (808 style) |
-| Plaits Synth Kick | Click | Drive | Swept sine with click (909 style) |
-| Plaits Analog Snare | Noise Tone | Snappy | Twin resonant shells and noise (808 style) |
-| Plaits Synth Snare | Noise Tone | Snappy | Swept oscillators and noise (909 style) |
-| Plaits Closed Hat | Colour | Noise | Metallic square-wave cluster, short |
-| Plaits Open Hat | Colour | Noise | Metallic cluster, long. Choke it with the closed hat. |
-| Plaits Modal | Brightness | Inharmonic | Woodblock → tom → bell as Inharmonic rises |
-| Plaits Clap | Body | Spread | Multi-burst handclap |
-| Braids Kick | Tone | Drive | Pulse-excited resonator kick |
-| Braids Snare | Noise Tone | Snappy | Dual resonators and noise |
-| Braids Cymbal | Colour | Noise | Six detuned metallic oscillators |
-| Braids Bell | Brightness | Inharmonic | Additive inharmonic partials |
+| Analog Kick | Tone | Drive | Bridged-T resonator with pitch dive (808 style) |
+| Synth Kick | Click | Drive | Swept sine with click (909 style) |
+| Analog Snare | Noise Tone | Snappy | Twin resonant shells and noise (808 style) |
+| Synth Snare | Noise Tone | Snappy | Swept oscillators and noise (909 style) |
+| Closed Hat | Colour | Noise | Metallic square-wave cluster, short |
+| Open Hat | Colour | Noise | Metallic cluster, long. Choke it with the closed hat. |
+| Modal Resonator | Brightness | Inharmonic | Woodblock → tom → bell as Inharmonic rises |
+| Clap | Body | Spread | Multi-burst handclap |
+| Pulse Kick | Tone | Drive | Pulse-excited resonator kick |
+| Resonant Snare | Noise Tone | Snappy | Dual resonators and noise |
+| Metal Cymbal | Colour | Noise | Six detuned metallic oscillators |
+| Additive Bell | Brightness | Inharmonic | Additive inharmonic partials |
 
 ## Modulation
 
 Each voice has three slots: **Source → Destination × Amount**.
 
-- **Sources:** Marbles X1–X3, Velocity (softer hits move the destination), Random (a new value per hit), LFO (one global, tempo-synced LFO: Sine, Triangle, Ramp Up/Down, Square, S&H, 1/16 to 8 bars), Bar Ramp (rises across each bar).
+- **Sources:** Chance X1–X3, Velocity (softer hits move the destination), Random (a new value per hit), LFO (one global, tempo-synced LFO: Sine, Triangle, Ramp Up/Down, Square, S&H, 1/16 to 8 bars), Bar Ramp (rises across each bar).
 - **Destinations:** Tune (±24 st), Decay, Tone, Character, Level (±24 dB), Pan.
 
 Sources are **sampled once per hit**, so every hit gets its own variation and nothing jumps in the middle of a decaying sound. A teal ring on a knob shows the modulation the last hit received.
@@ -165,4 +165,4 @@ MIDI notes and pad clicks always play a voice, whatever its trigger, and MIDI is
 - **Ctrl/Cmd + Z** undoes, **Ctrl/Cmd + Shift + Z** or **Ctrl + Y** redoes.
 - Hover over anything for a tooltip.
 - Start from the **Init Kit** preset for a blank kit, or from a factory preset in a style you like.
-- For a hat that never repeats, set a hat voice's trigger to **Marbles t2**, raise **Jitter** a little, and add **Random → Decay**.
+- For a hat that never repeats, set a hat voice's trigger to **Chance t2**, raise **Jitter** a little, and add **Random → Decay**.

@@ -95,30 +95,30 @@ private:
             add("Getting started",
                 "Load the Init Kit preset (the first preset, in the Init category): a plain kit with no processing. "
                 "Press play in your DAW (with HOST SYNC on) or switch HOST SYNC off and press RUNNING to use the internal "
-                "BPM. Kick, snare and closed hat follow Grids straight away. Click any pad to select and hear that voice, "
+                "BPM. Kick, snare and closed hat follow Topo straight away. Click any pad to select and hear that voice, "
                 "then shape it on the VOICE page.");
-            add("Grids - topographic patterns",
+            add("Topo - topographic patterns",
                 "The XY pad moves you around a map of drum patterns: nearby points sound related, so dragging slowly "
                 "morphs one groove into another. The three Density controls set how busy the kick (BD), snare (SD) "
                 "and hat (HH) lanes are; Chaos adds random variation; Swing delays every second 16th. The 32-step "
                 "preview shows exactly what will play, accents in brighter colours. In Euclidean mode each lane "
                 "instead spreads its hits evenly over its own Length.");
-            add("Marbles - random gates and voltages",
-                "Marbles produces three gate streams (t1-t3) and three random values (X1-X3). Rate runs it at 1/4x to "
+            add("Chance - random gates and voltages",
+                "Chance produces three gate streams (t1-t3) and three random values (X1-X3). Rate runs it at 1/4x to "
                 "4x the 16th-note clock, Jitter humanises the timing, Bias leans the coin tosses, and Deja Vu with Loop "
                 "Length makes the randomness repeat. Model picks Coin Toss, Polyrhythm or Drums behaviour. The "
-                "\"Marbles modulates Grids\" knobs let X1/X2/X3/t1 move the Grids map, chaos and density.");
+                "\"Chance modulates Topo\" knobs let X1/X2/X3/t1 move the Topo map, chaos and density.");
             add("Voices and engines",
                 "Each of the 8 voices runs one of 12 engines: 808 and 909-style kicks and snares, closed and open hats, "
-                "a modal resonator (woodblock to tom to bell), a clap, and Braids-style kick, snare, cymbal and bell. "
+                "a modal resonator (woodblock to tom to bell), a clap, a pulse kick, a resonant snare, a metal cymbal and an additive bell. "
                 "Tune, Decay, Tone and Character shape the sound; Tone and Character are relabelled per engine "
                 "(e.g. Snappy, Drive, Inharmonic).\n\n"
-                "Trigger chooses what plays the voice: a Grids lane, a Marbles gate, or MIDI / pad only. Voices in the "
+                "Trigger chooses what plays the voice: a Topo lane, a Chance gate, or MIDI / pad only. Voices in the "
                 "same Choke group cut each other off, like a closed hat stopping an open hat. Each voice has its own "
                 "MIDI note (GM defaults: 36, 38, 42, 46, 39, 45, 48, 49); MIDI notes and pad clicks always play a voice, "
                 "sample-accurately, whatever its trigger.");
             add("Modulation",
-                "Each voice has three slots: Source -> Destination x Amount. Sources are Marbles X1-X3, Velocity, "
+                "Each voice has three slots: Source -> Destination x Amount. Sources are Chance X1-X3, Velocity, "
                 "Random, the global tempo-synced LFO and a Bar Ramp. Destinations are Tune, Decay, Tone, Character, "
                 "Level and Pan. Sources are sampled once per hit, so every hit gets its own variation and nothing "
                 "jumps in the middle of a decaying sound. The teal ring on a knob shows what the last hit received.");
@@ -154,6 +154,8 @@ private:
                 "  - Marbles (2018): the random sampler, with its Deja Vu looping, t and X generators.\n"
                 "  - Plaits (2016) and Braids (2012): the 808 and 909-style drum models, hi-hats, modal resonator, "
                 "clap and the Braids percussion voices are built on her synthesis designs.\n\n"
+                "In Mutadrums these become Topo (after Grids), Chance (after Marbles) and the drum engines "
+                "(after Plaits and Braids), because the module names themselves belong to Mutable Instruments.\n\n"
                 "The ideas, the sound and the musical thinking behind these modules are hers; any mistakes in this "
                 "adaptation are mine. Thank you, Emilie.\n\n"
                 "Mutable Instruments is a registered trademark. Mutadrums is an independent project by mtyas and is "

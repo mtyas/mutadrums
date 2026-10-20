@@ -223,7 +223,7 @@ public:
         amt_.getProperties().set("accent", static_cast<juce::int64>(Theme::mod.getARGB()));
         amt_.onValueChange = [this] { repaint(); };
         src_.combo.setTooltip("Modulation source. Sampled once on every hit:\n"
-                              "Marbles X1-X3 - stepped random voltages\nVelocity - softer hits move the destination\n"
+                              "Chance X1-X3 - stepped random voltages\nVelocity - softer hits move the destination\n"
                               "Random - new value per hit\nLFO - global tempo-synced LFO\nBar Ramp - rises across the bar");
         dst_.combo.setTooltip("What this slot modulates");
         amt_.setTooltip("Depth and direction. Double-click to reset.");
@@ -283,7 +283,7 @@ public:
         for (int i = 0; i < kNumModSlots; ++i) addAndMakeVisible(slots_.add(new ModSlotRow(i)));
 
         engine_.combo.setTooltip("Sound engine for this voice");
-        trig_.combo.setTooltip("What plays this voice: a Grids lane, a Marbles gate, or only MIDI / the pad.\n"
+        trig_.combo.setTooltip("What plays this voice: a Topo lane, a Chance gate, or only MIDI / the pad.\n"
                                "MIDI notes always play it as well.");
         choke_.combo.setTooltip("Voices in the same group cut each other off (e.g. closed hat chokes open hat).");
         note_.combo.setTooltip("MIDI note that plays this voice");

@@ -6,7 +6,7 @@
 
 Mutadrums ships with the **Init Kit** and more than 30 factory kits in the Techno, Electro, IDM, Hip Hop, House, DnB, Ambient and World categories.
 
-- **Init Kit** (category *Init*) is the blank starting point: eight raw voices (kick, snare, closed and open hat, clap, low and high tom, cymbal) with flat EQ and no drive, compression or effect sends. Kick, snare and closed hat follow Grids; the others play from MIDI or the pads.
+- **Init Kit** (category *Init*) is the blank starting point: eight raw voices (kick, snare, closed and open hat, clap, low and high tom, cymbal) with flat EQ and no drive, compression or effect sends. Kick, snare and closed hat follow Topo; the others play from MIDI or the pads.
 - Factory presets can't be overwritten or deleted. Save a copy under a new name instead.
 
 ## Browsing and saving
@@ -62,10 +62,10 @@ Missing fields fall back to their defaults, so hand-written presets can be short
 
 | Field | Values |
 |---|---|
-| `engine` | 0 Analog Kick, 1 Synth Kick, 2 Analog Snare, 3 Synth Snare, 4 Closed Hat, 5 Open Hat, 6 Modal, 7 Clap, 8 Braids Kick, 9 Braids Snare, 10 Braids Cymbal, 11 Braids Bell |
-| `triggerSource` | 0 MIDI/pad only, 1 Grids BD, 2 Grids SD, 3 Grids HH, 4–6 Marbles t1–t3 |
+| `engine` | 0 Analog Kick, 1 Synth Kick, 2 Analog Snare, 3 Synth Snare, 4 Closed Hat, 5 Open Hat, 6 Modal Resonator, 7 Clap, 8 Pulse Kick, 9 Resonant Snare, 10 Metal Cymbal, 11 Additive Bell |
+| `triggerSource` | 0 MIDI/pad only, 1 Topo BD, 2 Topo SD, 3 Topo HH, 4–6 Chance t1–t3 |
 | `chokeGroup` | 0 none, 1–4 groups A–D |
-| `modSourceN` | 0 Off, 1–3 Marbles X1–X3, 4 Velocity, 5 Random, 6 LFO, 7 Bar Ramp |
+| `modSourceN` | 0 Off, 1–3 Chance X1–X3, 4 Velocity, 5 Random, 6 LFO, 7 Bar Ramp |
 | `modDestN` | 0 Tune, 1 Decay, 2 Tone, 3 Character, 4 Level, 5 Pan |
 | `driveMode` | 0 Tape, 1 Tube, 2 Clip |
 | `outputBus` | 0 Main, 1–7 Out 2–Out 8 |

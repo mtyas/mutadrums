@@ -9,6 +9,7 @@ First public release, under the new name.
 - **Smoother EQ.** Coefficients glide over about 30 ms instead of jumping once per audio block, so sweeps and automation don't zipper. The curve redraws as soon as a value changes, instead of lagging behind the knobs.
 - **Separate outputs.** Seven extra stereo outputs (Out 2–8). Each voice has an Output selector on the VOICE page and the mixer. Disabled outputs fall back to Main.
 - **Init Kit preset.** A plain eight-voice kit with no processing, as the first preset.
+- **New names for the parts.** Following Mutable Instruments' guidelines for derivative works, the pattern generators are now **Topo** (after Grids) and **Chance** (after Marbles), and the drum engines no longer carry the Plaits / Braids names. Parameter IDs are unchanged, so sessions and presets still load.
 - **About page.** A built-in guide to every section, with credits and licence.
 - **Licensed under GPL-3.0-or-later**, with documentation for GitHub.
 

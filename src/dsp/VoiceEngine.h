@@ -46,18 +46,18 @@ struct EngineInfo {
 
 inline const EngineInfo& getEngineInfo(int type) {
     static const EngineInfo infos[NUM_ENGINES] = {
-        { "Plaits Analog Kick",  "808 Kick",  "Tone",       "Drive",      "Bridged-T resonator with pitch dive and diode drive (808 style).", 50.0f },
-        { "Plaits Synth Kick",   "909 Kick",  "Click",      "Drive",      "Swept sine with band-passed click and waveshaper (909 style).",    50.0f },
-        { "Plaits Analog Snare", "808 Snare", "Noise Tone", "Snappy",     "Twin resonant shells plus filtered noise (808 style).",          180.0f },
-        { "Plaits Synth Snare",  "909 Snare", "Noise Tone", "Snappy",     "Two swept oscillators plus high-passed noise (909 style).",       180.0f },
-        { "Plaits Closed Hat",   "Closed Hat","Colour",     "Noise",      "Six square-wave metallic cluster, band-passed. Short decay.",       82.0f },
-        { "Plaits Open Hat",     "Open Hat",  "Colour",     "Noise",      "Metallic cluster with long decay — put it in a choke group with a closed hat.", 82.0f },
-        { "Plaits Modal",        "Modal",     "Brightness", "Inharmonic", "Physical resonator: woodblock -> tom -> bell as Inharmonic rises.", 160.0f },
-        { "Plaits Clap",         "Clap",      "Body",       "Spread",     "Multi-burst handclap into a resonant band-pass.",                 125.0f },
-        { "Braids Kick",         "Br Kick",   "Tone",       "Drive",      "Pulse-excited SVF resonator kick with saturation.",               50.0f },
-        { "Braids Snare",        "Br Snare",  "Noise Tone", "Snappy",     "Dual SVF resonators plus noise burst.",                          180.0f },
-        { "Braids Cymbal",       "Cymbal",    "Colour",     "Noise",      "Six detuned oscillators with metallic filtering.",               100.0f },
-        { "Braids Bell",         "Bell",      "Brightness", "Inharmonic", "Additive inharmonic partials — bells, gongs, struck metal.",     220.0f },
+        { "Analog Kick",  "808 Kick",  "Tone",       "Drive",      "Bridged-T resonator with pitch dive and diode drive (808 style).", 50.0f },
+        { "Synth Kick",   "909 Kick",  "Click",      "Drive",      "Swept sine with band-passed click and waveshaper (909 style).",    50.0f },
+        { "Analog Snare", "808 Snare", "Noise Tone", "Snappy",     "Twin resonant shells plus filtered noise (808 style).",          180.0f },
+        { "Synth Snare",  "909 Snare", "Noise Tone", "Snappy",     "Two swept oscillators plus high-passed noise (909 style).",       180.0f },
+        { "Closed Hat",   "Closed Hat","Colour",     "Noise",      "Six square-wave metallic cluster, band-passed. Short decay.",       82.0f },
+        { "Open Hat",     "Open Hat",  "Colour",     "Noise",      "Metallic cluster with long decay — put it in a choke group with a closed hat.", 82.0f },
+        { "Modal Resonator",        "Modal",     "Brightness", "Inharmonic", "Physical resonator: woodblock -> tom -> bell as Inharmonic rises.", 160.0f },
+        { "Clap",         "Clap",      "Body",       "Spread",     "Multi-burst handclap into a resonant band-pass.",                 125.0f },
+        { "Pulse Kick",         "Pulse Kick",   "Tone",       "Drive",      "Pulse-excited SVF resonator kick with saturation.",               50.0f },
+        { "Resonant Snare",        "Res Snare",  "Noise Tone", "Snappy",     "Dual SVF resonators plus noise burst.",                          180.0f },
+        { "Metal Cymbal",       "Cymbal",    "Colour",     "Noise",      "Six detuned oscillators with metallic filtering.",               100.0f },
+        { "Additive Bell",         "Bell",      "Brightness", "Inharmonic", "Additive inharmonic partials — bells, gongs, struck metal.",     220.0f },
     };
     return infos[std::clamp(type, 0, NUM_ENGINES - 1)];
 }
@@ -80,7 +80,7 @@ enum TriggerSource {
 
 inline const char* getTriggerSourceName(int src) {
     static const char* names[NUM_TRIG_SOURCES] = {
-        "MIDI / Pad only", "Grids BD", "Grids SD", "Grids HH", "Marbles t1", "Marbles t2", "Marbles t3"
+        "MIDI / Pad only", "Topo BD", "Topo SD", "Topo HH", "Chance t1", "Chance t2", "Chance t3"
     };
     return (src >= 0 && src < NUM_TRIG_SOURCES) ? names[src] : "MIDI / Pad only";
 }
@@ -103,7 +103,7 @@ enum ModSource {
 
 inline const char* getModSourceName(int src) {
     static const char* names[NUM_MOD_SOURCES] = {
-        "Off", "Marbles X1", "Marbles X2", "Marbles X3", "Velocity", "Random", "LFO", "Bar Ramp"
+        "Off", "Chance X1", "Chance X2", "Chance X3", "Velocity", "Random", "LFO", "Bar Ramp"
     };
     return (src >= 0 && src < NUM_MOD_SOURCES) ? names[src] : "Off";
 }
