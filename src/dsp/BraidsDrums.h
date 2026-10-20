@@ -1,10 +1,20 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+//
+// Percussion models based on Mutable Instruments Braids by Emilie Gillet (MIT licence).
+
 #pragma once
 #include <cmath>
 #include <algorithm>
 #include <random>
 #include "PlaitsDrums.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // --- BRAIDS KICK DRUM (Digital SVF Resonator + Pulse Excitation) ---
 class BraidsKick {
@@ -279,4 +289,4 @@ private:
     float velocity_{ 1.0f };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

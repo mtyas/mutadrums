@@ -1,3 +1,11 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <juce_core/juce_core.h>
 #include <vector>
@@ -5,7 +13,7 @@
 #include <memory>
 #include "FactoryPresets.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 class PresetManager {
 public:
@@ -81,10 +89,13 @@ public:
 
     juce::File getUserPresetsDirectory() const {
         auto dir = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-                       .getChildFile("MutableDrums")
+                       .getChildFile("Mutadrums")
                        .getChildFile("Presets");
         if (!dir.exists()) {
-            dir.createDirectory();
+            // First run after the rename: bring user presets over from the old MutableDrums folder
+            auto old = dir.getParentDirectory().getSiblingFile("MutableDrums").getChildFile("Presets");
+            if (old.isDirectory()) old.copyDirectoryTo(dir);
+            else dir.createDirectory();
         }
         return dir;
     }
@@ -287,6 +298,7 @@ public:
             chObj->setProperty("compBypass", ch.compBypass);
             chObj->setProperty("aux1SendDB", ch.aux1SendDB);
             chObj->setProperty("aux2SendDB", ch.aux2SendDB);
+            chObj->setProperty("outputBus", ch.outputBus);
             chArray.add(juce::var(chObj));
         }
         obj->setProperty("channels", chArray);
@@ -415,6 +427,7 @@ public:
                     ch.compBypass = static_cast<bool>(chVar.getProperty("compBypass", ch.compBypass));
                     ch.aux1SendDB = static_cast<float>(chVar.getProperty("aux1SendDB", ch.aux1SendDB));
                     ch.aux2SendDB = static_cast<float>(chVar.getProperty("aux2SendDB", ch.aux2SendDB));
+                    ch.outputBus = static_cast<int>(chVar.getProperty("outputBus", ch.outputBus));
                 }
             }
         }
@@ -437,4 +450,4 @@ private:
     std::vector<std::string> categories_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

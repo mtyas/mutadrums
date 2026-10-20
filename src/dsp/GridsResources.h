@@ -1,7 +1,18 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+//
+// Drum-map and Euclidean pattern tables from Mutable Instruments Grids,
+// Copyright 2012 Emilie Gillet (emilie.o.gillet@gmail.com), GPL-3.0-or-later.
+
 #pragma once
 #include <cstdint>
 
-namespace MutableDrums {
+namespace Mutadrums {
 namespace GridsData {
 
 alignas(16) static const uint32_t lut_res_euclidean[1024] = {
@@ -495,4 +506,4 @@ static const uint8_t* const drum_map[5][5] = {
 };
 
 } // namespace GridsData
-} // namespace MutableDrums
+} // namespace Mutadrums

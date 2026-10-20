@@ -1,3 +1,11 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <array>
@@ -11,14 +19,14 @@
 #include "dsp/FxReverb.h"
 #include "presets/PresetManager.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
-class MutableDrumsAudioProcessor : public juce::AudioProcessor {
+class MutadrumsAudioProcessor : public juce::AudioProcessor {
 public:
     static constexpr int kVoices = Params::kNumVoices;
 
-    MutableDrumsAudioProcessor();
-    ~MutableDrumsAudioProcessor() override = default;
+    MutadrumsAudioProcessor();
+    ~MutadrumsAudioProcessor() override = default;
 
     void prepareToPlay(double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -28,7 +36,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override { return true; }
 
-    const juce::String getName() const override { return "MutableDrums"; }
+    const juce::String getName() const override { return "Mutadrums"; }
     bool acceptsMidi() const override { return true; }
     bool producesMidi() const override { return false; }
     bool isMidiEffect() const override { return false; }
@@ -84,7 +92,7 @@ private:
         std::atomic<float>* engine{}; std::atomic<float>* trig{}; std::atomic<float>* choke{}; std::atomic<float>* note{};
         std::atomic<float>* tune{}; std::atomic<float>* decay{}; std::atomic<float>* tone{}; std::atomic<float>* chr{};
         std::atomic<float>* level{}; std::atomic<float>* pan{}; std::atomic<float>* mute{}; std::atomic<float>* solo{};
-        std::atomic<float>* send1{}; std::atomic<float>* send2{};
+        std::atomic<float>* send1{}; std::atomic<float>* send2{}; std::atomic<float>* out{};
         std::atomic<float>* eqOn{}; std::atomic<float>* eqLoF{}; std::atomic<float>* eqLoG{}; std::atomic<float>* eqMidF{};
         std::atomic<float>* eqMidQ{}; std::atomic<float>* eqMidG{}; std::atomic<float>* eqHiF{}; std::atomic<float>* eqHiG{};
         std::atomic<float>* drvOn{}; std::atomic<float>* drive{}; std::atomic<float>* drvTone{}; std::atomic<float>* drvTrim{}; std::atomic<float>* drvMode{};
@@ -93,6 +101,7 @@ private:
         std::array<std::atomic<float>*, kNumModSlots> modSrc{}, modDst{}, modAmt{};
     };
 
+    static BusesProperties makeBuses();
     void cacheParameterPointers();
     void pushParametersToDsp();
     void fireGridsStep(long long absStep);
@@ -148,6 +157,7 @@ private:
     std::array<int, kVoices> trigSource_{};
     std::array<int, kVoices> chokeGroup_{};
     std::array<int, kVoices> midiNote_{};
+    std::array<int, kVoices> outBus_{};
 
     float masterGain_{ 0.7f };
     float masterTarget_{ 0.7f };
@@ -159,7 +169,7 @@ private:
     std::atomic<float> masterPeakL_{ 0.0f }, masterPeakR_{ 0.0f }, dlyPeak_{ 0.0f }, revPeak_{ 0.0f };
     float dlyPeakHold_{ 0.0f }, revPeakHold_{ 0.0f };
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MutableDrumsAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MutadrumsAudioProcessor)
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

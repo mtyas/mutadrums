@@ -1,8 +1,16 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // Vertical fader bound to a parameter, with its value printed underneath
 class Fader : public juce::Component {
@@ -45,7 +53,7 @@ private:
 
 class MixerStrip : public juce::Component {
 public:
-    MixerStrip(MutableDrumsAudioProcessor& p, int index) : proc_(p), index_(index) {
+    MixerStrip(MutadrumsAudioProcessor& p, int index) : proc_(p), index_(index) {
         auto& s = p.getAPVTS();
         auto* um = &p.getUndoManager();
         using namespace Params;
@@ -69,6 +77,9 @@ public:
         fader_.setColour(col);
         addAndMakeVisible(fader_);
 
+        out_.attach(s, vid(index, V::out), um);
+        out_.combo.setTooltip("Plugin output for this channel (enable Out 2-8 in your DAW)");
+        addAndMakeVisible(out_);
         mute_.attach(s, vid(index, V::mute), um);
         solo_.attach(s, vid(index, V::solo), um);
         addAndMakeVisible(mute_);
@@ -116,6 +127,8 @@ public:
         auto ms = r.removeFromBottom(20);
         mute_.setBounds(ms.removeFromLeft(ms.getWidth() / 2).withTrimmedRight(1));
         solo_.setBounds(ms.withTrimmedLeft(1));
+        r.removeFromBottom(3);
+        out_.setBounds(r.removeFromBottom(20));
         r.removeFromBottom(4);
         fader_.setBounds(r);
     }
@@ -123,11 +136,12 @@ public:
     void mouseDown(const juce::MouseEvent&) override { if (onSelect) onSelect(index_); }
 
 private:
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     int index_, engine_{ 0 };
     ToggleChip eq_{ "EQ" }, drv_{ "DRV" }, cmp_{ "CMP" };
     Knob send1_{ "Delay", Theme::marblesT(0) }, send2_{ "Reverb", Theme::marblesT(1) }, pan_{ "Pan", Theme::text };
     Fader fader_;
+    ChoiceBox out_;
     ToggleChip mute_{ "M", Theme::danger }, solo_{ "S", Theme::accent };
     std::unique_ptr<juce::ParameterAttachment> engineAtt_;
 };
@@ -135,7 +149,7 @@ private:
 // Return / master strip
 class BusStrip : public juce::Component {
 public:
-    BusStrip(MutableDrumsAudioProcessor& p, const juce::String& name, const juce::String& paramId, juce::Colour c, int which)
+    BusStrip(MutadrumsAudioProcessor& p, const juce::String& name, const juce::String& paramId, juce::Colour c, int which)
         : proc_(p), name_(name), colour_(c), which_(which), fader_(c) {
         fader_.attach(p.getAPVTS(), paramId, &p.getUndoManager());
         addAndMakeVisible(fader_);
@@ -175,7 +189,7 @@ public:
     }
 
 private:
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     juce::String name_;
     juce::Colour colour_;
     int which_;
@@ -185,7 +199,7 @@ private:
 
 class MixerPage : public juce::Component {
 public:
-    explicit MixerPage(MutableDrumsAudioProcessor& p)
+    explicit MixerPage(MutadrumsAudioProcessor& p)
         : dly_(p, "DELAY RETURN", Params::ID::dlyReturn, Theme::marblesT(0), 0),
           rev_(p, "REVERB RETURN", Params::ID::revReturn, Theme::marblesT(1), 1),
           master_(p, "MASTER", Params::ID::master, Theme::accent, 2) {
@@ -224,4 +238,4 @@ private:
     BusStrip dly_, rev_, master_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

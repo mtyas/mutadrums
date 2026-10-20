@@ -1,11 +1,19 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #include "PluginEditor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
 //  MainView
 // =====================================================================================
-MainView::MainView(MutableDrumsAudioProcessor& p)
+MainView::MainView(MutadrumsAudioProcessor& p)
     : proc_(p), header_(p), pattern_(p), pads_(p), voicePage_(p), mixerPage_(p), fxPage_(p), browser_(p) {
     setWantsKeyboardFocus(true);
 
@@ -32,6 +40,10 @@ MainView::MainView(MutableDrumsAudioProcessor& p)
     addChildComponent(browser_);
     browser_.onClose = [this] { browser_.setVisible(false); grabKeyboardFocus(); };
     browser_.onLoaded = [this] { header_.refresh(); };
+
+    addChildComponent(about_);
+    header_.onAbout = [this] { about_.open(); about_.grabKeyboardFocus(); };
+    about_.onClose = [this] { about_.setVisible(false); grabKeyboardFocus(); };
 
     selectVoice(p.selectedVoice.load());
     setPage(0);
@@ -85,6 +97,7 @@ void MainView::resized() {
     auto r = getLocalBounds();
     header_.setBounds(r.removeFromTop(56));
     browser_.setBounds(getLocalBounds());
+    about_.setBounds(getLocalBounds());
     r.reduce(10, 8);
 
     pattern_.setBounds(r.removeFromLeft(400));
@@ -108,7 +121,7 @@ void MainView::resized() {
 // =====================================================================================
 //  Editor
 // =====================================================================================
-MutableDrumsAudioProcessorEditor::MutableDrumsAudioProcessorEditor(MutableDrumsAudioProcessor& p)
+MutadrumsAudioProcessorEditor::MutadrumsAudioProcessorEditor(MutadrumsAudioProcessor& p)
     : AudioProcessorEditor(&p), view_(p) {
     setLookAndFeel(&lnf_);
     addAndMakeVisible(view_);
@@ -122,20 +135,20 @@ MutableDrumsAudioProcessorEditor::MutableDrumsAudioProcessorEditor(MutableDrumsA
     startTimerHz(30);
 }
 
-MutableDrumsAudioProcessorEditor::~MutableDrumsAudioProcessorEditor() {
+MutadrumsAudioProcessorEditor::~MutadrumsAudioProcessorEditor() {
     stopTimer();
     tooltips_.setLookAndFeel(nullptr);
     setLookAndFeel(nullptr);
 }
 
-void MutableDrumsAudioProcessorEditor::paint(juce::Graphics& g) { g.fillAll(Theme::bg); }
+void MutadrumsAudioProcessorEditor::paint(juce::Graphics& g) { g.fillAll(Theme::bg); }
 
-void MutableDrumsAudioProcessorEditor::resized() {
+void MutadrumsAudioProcessorEditor::resized() {
     const float scale = static_cast<float>(getWidth()) / static_cast<float>(MainView::kWidth);
     view_.setBounds(0, 0, MainView::kWidth, MainView::kHeight);
     view_.setTransform(juce::AffineTransform::scale(scale));
 }
 
-void MutableDrumsAudioProcessorEditor::timerCallback() { view_.refresh(); }
+void MutadrumsAudioProcessorEditor::timerCallback() { view_.refresh(); }
 
-} // namespace MutableDrums
+} // namespace Mutadrums

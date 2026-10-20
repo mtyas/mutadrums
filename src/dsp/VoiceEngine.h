@@ -1,3 +1,11 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <array>
 #include <cmath>
@@ -6,7 +14,7 @@
 #include "PlaitsDrums.h"
 #include "BraidsDrums.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // -------------------------------------------------------------------------------------
 //  Engines
@@ -354,4 +362,4 @@ private:
     BraidsBell braidsBell_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

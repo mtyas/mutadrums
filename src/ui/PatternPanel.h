@@ -1,8 +1,16 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
 //  XY pad for the Grids topographic map
@@ -298,7 +306,7 @@ private:
 // =====================================================================================
 class PatternPanel : public juce::Component {
 public:
-    explicit PatternPanel(MutableDrumsAudioProcessor& p)
+    explicit PatternPanel(MutadrumsAudioProcessor& p)
         : proc_(p), state_(p.getAPVTS()), xy_(state_, &p.getUndoManager()), steps_(state_), marbles_(state_) {
         auto* um = &p.getUndoManager();
         using namespace Params;
@@ -429,7 +437,7 @@ private:
         repaint();
     }
 
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     APVTS& state_;
     juce::Rectangle<int> gridsArea_, marblesArea_, modLabel_;
 
@@ -449,4 +457,4 @@ private:
     std::array<uint32_t, 3> lastG_{}, lastM_{};
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

@@ -1,13 +1,24 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "dsp/VoiceEngine.h"
 #include "dsp/FxDelay.h"
 #include "dsp/FxReverb.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 namespace Params {
 
 static constexpr int kNumVoices = 8;
+static constexpr int kNumOutputs = 8; // stereo outputs: Main + Out 2..8
+
+inline juce::String outputName(int bus) { return bus == 0 ? juce::String("Main") : "Out " + juce::String(bus + 1); }
 
 // ---- Global IDs ---------------------------------------------------------------------
 namespace ID {
@@ -75,6 +86,7 @@ namespace V {
     inline const char* solo    = "solo";
     inline const char* send1   = "sendDly";
     inline const char* send2   = "sendRev";
+    inline const char* out     = "out";
 
     inline const char* eqOn    = "eqOn";
     inline const char* eqLoF   = "eqLoF";
@@ -261,7 +273,8 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
     }
 
     // ---- Voices
-    juce::StringArray engines, trigs, chokes, srcs, dsts;
+    juce::StringArray engines, trigs, chokes, srcs, dsts, outs;
+    for (int i = 0; i < kNumOutputs; ++i) outs.add(outputName(i));
     for (int i = 0; i < NUM_ENGINES; ++i) engines.add(getEngineInfo(i).name);
     for (int i = 0; i < NUM_TRIG_SOURCES; ++i) trigs.add(getTriggerSourceName(i));
     chokes.addArray({ "None", "Group A", "Group B", "Group C", "Group D" });
@@ -292,6 +305,7 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
         g->addChild(toggle(vid(v, V::solo), pre + "Solo", false));
         g->addChild(fl(vid(v, V::send1), pre + "Delay Send", Range(-60.0f, 6.0f, 0.1f), -60.0f, dbText));
         g->addChild(fl(vid(v, V::send2), pre + "Reverb Send", Range(-60.0f, 6.0f, 0.1f), -60.0f, dbText));
+        g->addChild(std::make_unique<APC>(juce::ParameterID{ vid(v, V::out), 1 }, pre + "Output", outs, 0));
 
         g->addChild(toggle(vid(v, V::eqOn), pre + "EQ On", true));
         g->addChild(fl(vid(v, V::eqLoF), pre + "EQ Low Freq", skewed(30.0f, 600.0f, 120.0f), 100.0f, hzText));
@@ -337,4 +351,4 @@ inline juce::AudioProcessorValueTreeState::ParameterLayout createLayout() {
 }
 
 } // namespace Params
-} // namespace MutableDrums
+} // namespace Mutadrums

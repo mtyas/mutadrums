@@ -1,7 +1,15 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 namespace {
     // In the old preset format each engine read either "timbre" or "morph" as its 4th control.
@@ -12,9 +20,9 @@ namespace {
     inline float dbToGain(float db) { return db <= -59.0f ? 0.0f : std::pow(10.0f, db / 20.0f); }
 }
 
-MutableDrumsAudioProcessor::MutableDrumsAudioProcessor()
-    : AudioProcessor(BusesProperties().withOutput("Output", juce::AudioChannelSet::stereo(), true)),
-      apvts_(*this, &undoManager_, "MutableDrums", Params::createLayout()) {
+MutadrumsAudioProcessor::MutadrumsAudioProcessor()
+    : AudioProcessor(makeBuses()),
+      apvts_(*this, &undoManager_, "Mutadrums", Params::createLayout()) {
     for (auto& a : channelPeaks_) a.store(0.0f);
     for (auto& a : channelGRs_) a.store(0.0f);
     for (auto& a : gridsHitCount) a.store(0);
@@ -34,10 +42,18 @@ MutableDrumsAudioProcessor::MutableDrumsAudioProcessor()
     undoManager_.clearUndoHistory();
 }
 
+// Main stereo out plus seven optional stereo outs, so each voice can get its own mixer channel in the DAW
+juce::AudioProcessor::BusesProperties MutadrumsAudioProcessor::makeBuses() {
+    BusesProperties b;
+    for (int i = 0; i < Params::kNumOutputs; ++i)
+        b = b.withOutput(Params::outputName(i), juce::AudioChannelSet::stereo(), i == 0);
+    return b;
+}
+
 // =====================================================================================
 //  Parameter plumbing
 // =====================================================================================
-void MutableDrumsAudioProcessor::cacheParameterPointers() {
+void MutadrumsAudioProcessor::cacheParameterPointers() {
     using namespace Params;
     auto P = [this](const juce::String& id) {
         auto* p = apvts_.getRawParameterValue(id);
@@ -63,7 +79,7 @@ void MutableDrumsAudioProcessor::cacheParameterPointers() {
         p.engine = Q(V::engine); p.trig = Q(V::trig); p.choke = Q(V::choke); p.note = Q(V::note);
         p.tune = Q(V::tune); p.decay = Q(V::decay); p.tone = Q(V::tone); p.chr = Q(V::chr);
         p.level = Q(V::level); p.pan = Q(V::pan); p.mute = Q(V::mute); p.solo = Q(V::solo);
-        p.send1 = Q(V::send1); p.send2 = Q(V::send2);
+        p.send1 = Q(V::send1); p.send2 = Q(V::send2); p.out = Q(V::out);
         p.eqOn = Q(V::eqOn); p.eqLoF = Q(V::eqLoF); p.eqLoG = Q(V::eqLoG); p.eqMidF = Q(V::eqMidF);
         p.eqMidQ = Q(V::eqMidQ); p.eqMidG = Q(V::eqMidG); p.eqHiF = Q(V::eqHiF); p.eqHiG = Q(V::eqHiG);
         p.drvOn = Q(V::drvOn); p.drive = Q(V::drive); p.drvTone = Q(V::drvTone); p.drvTrim = Q(V::drvTrim); p.drvMode = Q(V::drvMode);
@@ -77,7 +93,7 @@ void MutableDrumsAudioProcessor::cacheParameterPointers() {
     }
 }
 
-void MutableDrumsAudioProcessor::pushParametersToDsp() {
+void MutadrumsAudioProcessor::pushParametersToDsp() {
     auto f = [](std::atomic<float>* a) { return a->load(std::memory_order_relaxed); };
     auto i = [](std::atomic<float>* a) { return static_cast<int>(std::lround(a->load(std::memory_order_relaxed))); };
     auto b = [](std::atomic<float>* a) { return a->load(std::memory_order_relaxed) > 0.5f; };
@@ -124,6 +140,7 @@ void MutableDrumsAudioProcessor::pushParametersToDsp() {
         trigSource_[static_cast<size_t>(v)] = i(p.trig);
         chokeGroup_[static_cast<size_t>(v)] = i(p.choke);
         midiNote_[static_cast<size_t>(v)] = i(p.note);
+        outBus_[static_cast<size_t>(v)] = juce::jlimit(0, Params::kNumOutputs - 1, i(p.out));
 
         const bool audible = anySolo ? b(p.solo) : !b(p.mute);
         ch.setEQEnabled(b(p.eqOn));
@@ -134,7 +151,7 @@ void MutableDrumsAudioProcessor::pushParametersToDsp() {
     }
 }
 
-void MutableDrumsAudioProcessor::setParam(const juce::String& id, float plainValue) {
+void MutadrumsAudioProcessor::setParam(const juce::String& id, float plainValue) {
     if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(apvts_.getParameter(id)))
         param->setValueNotifyingHost(param->convertTo0to1(plainValue));
 }
@@ -142,13 +159,13 @@ void MutableDrumsAudioProcessor::setParam(const juce::String& id, float plainVal
 // =====================================================================================
 //  Presets
 // =====================================================================================
-const juce::String MutableDrumsAudioProcessor::getProgramName(int index) {
+const juce::String MutadrumsAudioProcessor::getProgramName(int index) {
     const auto& presets = presetManager_.getAllPresets();
     if (index >= 0 && index < static_cast<int>(presets.size())) return presets[static_cast<size_t>(index)].name;
     return "Init";
 }
 
-void MutableDrumsAudioProcessor::loadPreset(int index) {
+void MutadrumsAudioProcessor::loadPreset(int index) {
     const auto& presets = presetManager_.getAllPresets();
     if (index < 0 || index >= static_cast<int>(presets.size())) return;
     presetManager_.selectPreset(index);
@@ -157,7 +174,7 @@ void MutableDrumsAudioProcessor::loadPreset(int index) {
     currentPresetName_ = presetManager_.getCurrentPreset().name;
 }
 
-void MutableDrumsAudioProcessor::applyPreset(const PresetData& p) {
+void MutadrumsAudioProcessor::applyPreset(const PresetData& p) {
     using namespace Params;
     setParam(ID::hostSync, p.syncToHost ? 1.0f : 0.0f);
     if (p.bpm >= 30.0f && p.bpm <= 300.0f) setParam(ID::bpm, p.bpm);
@@ -222,6 +239,7 @@ void MutableDrumsAudioProcessor::applyPreset(const PresetData& p) {
         S(V::solo, 0.0f);
         S(V::send1, c.aux1SendDB);
         S(V::send2, c.aux2SendDB);
+        S(V::out, static_cast<float>(juce::jlimit(0, kNumOutputs - 1, c.outputBus)));
         S(V::eqOn, c.eqBypass ? 0.0f : 1.0f);
         S(V::eqLoF, c.eqLowFreq);   S(V::eqLoG, c.eqLowGain);
         S(V::eqMidF, c.eqMidFreq);  S(V::eqMidQ, c.eqMidQ);  S(V::eqMidG, c.eqMidGain);
@@ -245,7 +263,7 @@ void MutableDrumsAudioProcessor::applyPreset(const PresetData& p) {
     }
 }
 
-PresetData MutableDrumsAudioProcessor::captureState() const {
+PresetData MutadrumsAudioProcessor::captureState() const {
     using namespace Params;
     auto get = [this](const juce::String& id) -> float {
         if (auto* param = dynamic_cast<juce::RangedAudioParameter*>(apvts_.getParameter(id)))
@@ -294,6 +312,7 @@ PresetData MutableDrumsAudioProcessor::captureState() const {
         c.timbre = c.morph = G(V::chr);
         c.volumeDB = G(V::level); c.pan = G(V::pan);
         c.aux1SendDB = G(V::send1); c.aux2SendDB = G(V::send2);
+        c.outputBus = static_cast<int>(std::lround(G(V::out)));
         c.eqBypass = G(V::eqOn) < 0.5f;
         c.eqLowFreq = G(V::eqLoF); c.eqLowGain = G(V::eqLoG);
         c.eqMidFreq = G(V::eqMidF); c.eqMidQ = G(V::eqMidQ); c.eqMidGain = G(V::eqMidG);
@@ -319,7 +338,7 @@ PresetData MutableDrumsAudioProcessor::captureState() const {
 // =====================================================================================
 //  Audio
 // =====================================================================================
-void MutableDrumsAudioProcessor::prepareToPlay(double sampleRate, int) {
+void MutadrumsAudioProcessor::prepareToPlay(double sampleRate, int) {
     sampleRate_ = sampleRate;
     for (int i = 0; i < kVoices; ++i) {
         voices_[static_cast<size_t>(i)].init(static_cast<float>(sampleRate));
@@ -337,23 +356,28 @@ void MutableDrumsAudioProcessor::prepareToPlay(double sampleRate, int) {
     expectedHostPos_ = -1.0;
 }
 
-void MutableDrumsAudioProcessor::releaseResources() {
+void MutadrumsAudioProcessor::releaseResources() {
     for (auto& v : voices_) v.reset();
     for (auto& c : channels_) c.reset();
     delay_.reset();
     reverb_.reset();
 }
 
-bool MutableDrumsAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
-    return layouts.getMainOutputChannelSet() == juce::AudioChannelSet::stereo();
+bool MutadrumsAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()) return false;
+    for (int b = 1; b < layouts.outputBuses.size(); ++b) {
+        const auto& set = layouts.outputBuses.getReference(b);
+        if (!set.isDisabled() && set != juce::AudioChannelSet::stereo()) return false;
+    }
+    return layouts.inputBuses.isEmpty();
 }
 
-void MutableDrumsAudioProcessor::triggerVoiceManual(int voiceIndex) {
+void MutadrumsAudioProcessor::triggerVoiceManual(int voiceIndex) {
     if (voiceIndex >= 0 && voiceIndex < kVoices)
         pendingManual_.fetch_or(1u << voiceIndex);
 }
 
-void MutableDrumsAudioProcessor::triggerVoice(int v, float velocity) {
+void MutadrumsAudioProcessor::triggerVoice(int v, float velocity) {
     const int cg = chokeGroup_[static_cast<size_t>(v)];
     if (cg > 0) {
         for (int j = 0; j < kVoices; ++j)
@@ -373,7 +397,7 @@ void MutableDrumsAudioProcessor::triggerVoice(int v, float velocity) {
         voiceMod[static_cast<size_t>(v)][static_cast<size_t>(d)].store(voice.getModOffset(d));
 }
 
-void MutableDrumsAudioProcessor::fireGridsStep(long long absStep) {
+void MutadrumsAudioProcessor::fireGridsStep(long long absStep) {
     const float x1 = marbles_.getVoltage(0), x2 = marbles_.getVoltage(1), x3 = marbles_.getVoltage(2);
     const float modX = pModGX_->load() * (x1 - 0.5f) * 2.0f;
     const float modY = pModGY_->load() * (x2 - 0.5f) * 2.0f;
@@ -397,7 +421,7 @@ void MutableDrumsAudioProcessor::fireGridsStep(long long absStep) {
     }
 }
 
-void MutableDrumsAudioProcessor::fireMarblesStep(long long absStep) {
+void MutadrumsAudioProcessor::fireMarblesStep(long long absStep) {
     marbles_.stepClock(static_cast<int>(absStep % 1000000));
     marblesStep.store(marbles_.getHistoryIndex());
     for (int k = 0; k < 3; ++k) {
@@ -413,7 +437,7 @@ void MutableDrumsAudioProcessor::fireMarblesStep(long long absStep) {
     }
 }
 
-float MutableDrumsAudioProcessor::computeLfo(double beatPos) {
+float MutadrumsAudioProcessor::computeLfo(double beatPos) {
     const double len = Params::lfoRateBeats(static_cast<int>(std::lround(pLfoRate_->load())));
     const double cycles = beatPos / len;
     const double cyc = std::floor(cycles);
@@ -433,7 +457,7 @@ float MutableDrumsAudioProcessor::computeLfo(double beatPos) {
     }
 }
 
-void MutableDrumsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
+void MutadrumsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals;
     const int numSamples = buffer.getNumSamples();
     for (int c = 0; c < buffer.getNumChannels(); ++c) buffer.clear(c, 0, numSamples);
@@ -498,6 +522,21 @@ void MutableDrumsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
 
     float* outL = buffer.getWritePointer(0);
     float* outR = buffer.getWritePointer(1);
+
+    // Extra outputs the host has enabled. A voice sent to a disabled one plays through Main instead.
+    std::array<float*, Params::kNumOutputs> auxL{}, auxR{};
+    for (int b = 1; b < Params::kNumOutputs; ++b) {
+        auto* bus = getBus(false, b);
+        if (bus == nullptr || !bus->isEnabled() || bus->getNumberOfChannels() < 2) continue;
+        auto busBuffer = getBusBuffer(buffer, false, b);
+        auxL[static_cast<size_t>(b)] = busBuffer.getWritePointer(0);
+        auxR[static_cast<size_t>(b)] = busBuffer.getWritePointer(1);
+    }
+    std::array<int, kVoices> route{};
+    for (int v = 0; v < kVoices; ++v) {
+        const int b = outBus_[static_cast<size_t>(v)];
+        route[static_cast<size_t>(v)] = auxL[static_cast<size_t>(b)] != nullptr ? b : 0;
+    }
     float peakL = 0.0f, peakR = 0.0f, pkD = 0.0f, pkR = 0.0f;
 
     auto midiIt = midiMessages.cbegin();
@@ -543,7 +582,14 @@ void MutableDrumsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
             const float dry = voices_[static_cast<size_t>(v)].process();
             float l, r, a1, a2;
             channels_[static_cast<size_t>(v)].process(dry, l, r, a1, a2);
-            sumL += l; sumR += r; aux1 += a1; aux2 += a2;
+            aux1 += a1; aux2 += a2;
+            if (const int b = route[static_cast<size_t>(v)]; b > 0) {
+                // Separate outs: post-fader channel, same level as on Main, no master or limiter
+                auxL[static_cast<size_t>(b)][n] += l * 0.65f;
+                auxR[static_cast<size_t>(b)][n] += r * 0.65f;
+            } else {
+                sumL += l; sumR += r;
+            }
         }
 
         float dL, dR, rL, rR;
@@ -586,14 +632,14 @@ void MutableDrumsAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, 
     revPeak_.store(revPeakHold_);
 }
 
-juce::AudioProcessorEditor* MutableDrumsAudioProcessor::createEditor() {
-    return new MutableDrumsAudioProcessorEditor(*this);
+juce::AudioProcessorEditor* MutadrumsAudioProcessor::createEditor() {
+    return new MutadrumsAudioProcessorEditor(*this);
 }
 
 // =====================================================================================
 //  State
 // =====================================================================================
-void MutableDrumsAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
+void MutadrumsAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
     auto state = apvts_.copyState();
     state.setProperty("presetName", currentPresetName_, nullptr);
     state.setProperty("presetIndex", presetManager_.getCurrentPresetIndex(), nullptr);
@@ -602,7 +648,7 @@ void MutableDrumsAudioProcessor::getStateInformation(juce::MemoryBlock& destData
     if (auto xml = state.createXml()) copyXmlToBinary(*xml, destData);
 }
 
-void MutableDrumsAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {
+void MutadrumsAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {
     if (auto xml = getXmlFromBinary(data, sizeInBytes)) {
         if (xml->hasTagName(apvts_.state.getType())) {
             auto tree = juce::ValueTree::fromXml(*xml);
@@ -625,8 +671,8 @@ void MutableDrumsAudioProcessor::setStateInformation(const void* data, int sizeI
     }
 }
 
-} // namespace MutableDrums
+} // namespace Mutadrums
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
-    return new MutableDrums::MutableDrumsAudioProcessor();
+    return new Mutadrums::MutadrumsAudioProcessor();
 }

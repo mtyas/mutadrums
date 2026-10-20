@@ -1,15 +1,23 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
 //  Full-window preset browser: categories | presets, search, load / save / delete
 // =====================================================================================
 class PresetBrowser : public juce::Component {
 public:
-    explicit PresetBrowser(MutableDrumsAudioProcessor& p) : proc_(p), catModel_(*this), presetModel_(*this) {
+    explicit PresetBrowser(MutadrumsAudioProcessor& p) : proc_(p), catModel_(*this), presetModel_(*this) {
         addAndMakeVisible(categories_);
         addAndMakeVisible(presets_);
         categories_.setModel(&catModel_);
@@ -226,7 +234,7 @@ private:
         }
     }
 
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     CatModel catModel_;
     PresetModel presetModel_;
     juce::ListBox categories_, presets_;
@@ -236,4 +244,4 @@ private:
     juce::Rectangle<int> box_, catLabel_, saveLabel_, descArea_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

@@ -1,9 +1,17 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <string>
 #include <vector>
 #include <array>
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 struct ChannelPreset {
     int engine{ 0 };
@@ -59,6 +67,7 @@ struct ChannelPreset {
 
     float aux1SendDB{ -60.0f }; // Delay
     float aux2SendDB{ -60.0f }; // Reverb
+    int outputBus{ 0 };         // 0 = Main, 1..7 = Out 2..8
 };
 
 struct PresetData {
@@ -131,6 +140,48 @@ public:
         std::vector<PresetData> presets;
 
         // =========================================================================
+        // INIT KIT: one plain sound per voice, everything at its default, no processing
+        // =========================================================================
+        {
+            PresetData p;
+            p.name = "Init Kit";
+            p.category = "Init";
+            p.author = "mtyas";
+            p.description = "A blank starting point: raw 808/909-style kit, flat EQ, no drive, compression or effect sends. "
+                            "Kick, snare and closed hat follow Grids; the rest play from MIDI or the pads.";
+            p.formatVersion = 2;
+            p.delayReturnDB = -14.0f;
+            p.reverbReturnDB = -16.0f;
+
+            struct Raw { int engine; float tune; float decay; float chr; int trig; int choke; float pan; };
+            const Raw kit[8] = {
+                { 0,  0.0f, 0.50f, 0.50f, 1, 0,  0.00f }, // Kick       (Grids BD)
+                { 2,  0.0f, 0.45f, 0.50f, 2, 0,  0.00f }, // Snare      (Grids SD)
+                { 4,  0.0f, 0.20f, 0.50f, 3, 1, -0.15f }, // Closed hat (Grids HH, chokes open hat)
+                { 5,  0.0f, 0.55f, 0.50f, 0, 1, -0.15f }, // Open hat
+                { 7,  0.0f, 0.40f, 0.50f, 0, 0,  0.00f }, // Clap
+                { 6, -7.0f, 0.45f, 0.25f, 0, 0, -0.25f }, // Low tom    (Modal, low Inharmonic = drum-like)
+                { 6,  0.0f, 0.40f, 0.25f, 0, 0,  0.25f }, // High tom
+                { 10, 0.0f, 0.70f, 0.50f, 0, 0,  0.10f }, // Cymbal
+            };
+            for (int v = 0; v < 8; ++v) {
+                auto& c = p.channels[static_cast<size_t>(v)];
+                c.engine = kit[v].engine;
+                c.tune = kit[v].tune;
+                c.decay = kit[v].decay;
+                c.tone = 0.5f;
+                c.timbre = c.morph = kit[v].chr;
+                c.triggerSource = kit[v].trig;
+                c.chokeGroup = kit[v].choke;
+                c.pan = kit[v].pan;
+                c.volumeDB = -10.0f;
+                c.driveBypass = true;
+                c.compBypass = true;
+            }
+            presets.push_back(p);
+        }
+
+        // =========================================================================
         // CATEGORY: TECHNO (6 PRESETS)
         // =========================================================================
 
@@ -139,7 +190,7 @@ public:
             PresetData p;
             p.name = "Techno 909 Peaktime";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Driving peaktime Berlin techno with punchy 909 kick, snappy resonant snare, driving 16th hats, and parallel drive.";
             p.bpm = 130.0f;
             p.gridsX = 0.82f; p.gridsY = 0.72f; p.gridsChaos = 0.12f;
@@ -189,7 +240,7 @@ public:
             PresetData p;
             p.name = "Techno Raw Acid 303";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Gritty, overdriven underground warehouse acid with saturated transient kick, snappy claps, and Marbles chaos modulation.";
             p.bpm = 134.0f;
             p.gridsX = 0.78f; p.gridsY = 0.60f; p.gridsChaos = 0.25f;
@@ -220,7 +271,7 @@ public:
             PresetData p;
             p.name = "Techno Dub Subspace";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Deep warm sub bass kick, tape saturated ping-pong delay and diffuse atmospheric reverb.";
             p.bpm = 124.0f;
             p.gridsX = 0.25f; p.gridsY = 0.82f; p.gridsChaos = 0.05f;
@@ -248,7 +299,7 @@ public:
             PresetData p;
             p.name = "Techno Minimal Micro";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Sleek, tight, clicking micro-percussions with precise transient response and clinical groove.";
             p.bpm = 126.0f;
             p.gridsX = 0.45f; p.gridsY = 0.32f; p.gridsChaos = 0.08f;
@@ -277,7 +328,7 @@ public:
             PresetData p;
             p.name = "Techno Dark Industrial";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Crushing, distorted industrial rhythm section with overdriven Braids kicks and aggressive tube saturation.";
             p.bpm = 136.0f;
             p.gridsX = 0.88f; p.gridsY = 0.84f; p.gridsChaos = 0.32f;
@@ -306,7 +357,7 @@ public:
             PresetData p;
             p.name = "Techno Detroit Soul";
             p.category = "Techno";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Warm analog drum machine architecture with subtle organic swing, open hats and chordal modal percussions.";
             p.bpm = 128.0f;
             p.gridsX = 0.62f; p.gridsY = 0.54f; p.gridsChaos = 0.10f;
@@ -339,7 +390,7 @@ public:
             PresetData p;
             p.name = "Electro 808 Classic";
             p.category = "Electro";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Deep analog sub 808 kick with dual resonant snare, particle claps, and ping-pong sync delay.";
             p.bpm = 125.0f;
             p.gridsX = 0.35f; p.gridsY = 0.40f; p.gridsChaos = 0.05f;
@@ -372,7 +423,7 @@ public:
             PresetData p;
             p.name = "Electro Cyberpunk 2088";
             p.category = "Electro";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Futuristic cybernetic rhythm section with metallic transient snap, modulated morph, and stereo widening.";
             p.bpm = 128.0f;
             p.gridsX = 0.75f; p.gridsY = 0.45f; p.gridsChaos = 0.18f;
@@ -400,7 +451,7 @@ public:
             PresetData p;
             p.name = "Electro Miami Bass Slam";
             p.category = "Electro";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Heavy 808 sub kick drop with syncopated rimshots, fast rolling hats and vintage Florida electro vibe.";
             p.bpm = 130.0f;
             p.gridsX = 0.52f; p.gridsY = 0.38f; p.gridsChaos = 0.10f;
@@ -428,7 +479,7 @@ public:
             PresetData p;
             p.name = "Electro Synthwave Cruise";
             p.category = "Electro";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Retro 80s gated snare, punchy disco kick, chorused tom fills and lush analog tape warmth.";
             p.bpm = 118.0f;
             p.gridsX = 0.60f; p.gridsY = 0.50f; p.gridsChaos = 0.06f;
@@ -454,7 +505,7 @@ public:
             PresetData p;
             p.name = "Electro Neon Kraftwerk";
             p.category = "Electro";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Precision electronic woodblocks, robotic synthesized ticks, and Euclidean rhythm geometry.";
             p.bpm = 122.0f;
             p.gridsOutputMode = 1; // Euclidean
@@ -478,7 +529,7 @@ public:
             PresetData p;
             p.name = "IDM Warp Generative";
             p.category = "IDM";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Complex generative IDM beats with Marbles Bernoulli coin toss, modal inharmonicities, and modulated timbres.";
             p.bpm = 120.0f;
             p.gridsX = 0.65f; p.gridsY = 0.25f; p.gridsChaos = 0.42f;
@@ -509,7 +560,7 @@ public:
             PresetData p;
             p.name = "IDM Autechre Inharmonic";
             p.category = "IDM";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Metallic modal resonators with sharp inharmonic frequency spectra, asymmetric overdrive, and chaotic stereo scatter.";
             p.bpm = 132.0f;
             p.gridsX = 0.72f; p.gridsY = 0.78f; p.gridsChaos = 0.50f;
@@ -535,7 +586,7 @@ public:
             PresetData p;
             p.name = "IDM Chaos Theory";
             p.category = "IDM";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Maximum Marbles jitter and bias modulation of Grids topographic map coordinates ($X, Y$), creating an evolving rhythm organism.";
             p.bpm = 115.0f;
             p.gridsX = 0.5f; p.gridsY = 0.5f; p.gridsChaos = 0.6f;
@@ -555,7 +606,7 @@ public:
             PresetData p;
             p.name = "IDM Granular Dust";
             p.category = "IDM";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Microscopic particle engine claps, diffuse modal bells and fluttering granular dust.";
             p.bpm = 108.0f;
             p.gridsX = 0.38f; p.gridsY = 0.28f; p.gridsChaos = 0.30f;
@@ -575,7 +626,7 @@ public:
             PresetData p;
             p.name = "IDM Micro Clockwork";
             p.category = "IDM";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Rapid polyrhythmic clock multipliers, metallic bells and microtonal ride cymbals running like clockwork.";
             p.bpm = 140.0f;
             p.gridsX = 0.58f; p.gridsY = 0.68f; p.gridsChaos = 0.15f;
@@ -599,7 +650,7 @@ public:
             PresetData p;
             p.name = "Hip Hop Boom Bap 90s";
             p.category = "Hip Hop";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Fat, crunchy acoustic punch with warm vinyl crackle, loose organic swing, and tape saturated glue.";
             p.bpm = 92.0f;
             p.gridsX = 0.42f; p.gridsY = 0.35f; p.gridsChaos = 0.08f;
@@ -625,7 +676,7 @@ public:
             PresetData p;
             p.name = "Hip Hop Dusty Lo-Fi Chill";
             p.category = "Hip Hop";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Mellow rounded kick, soft sidechained snare, warm tape flutter and nostalgic chillhop atmosphere.";
             p.bpm = 85.0f;
             p.gridsX = 0.30f; p.gridsY = 0.22f; p.gridsChaos = 0.05f;
@@ -653,7 +704,7 @@ public:
             PresetData p;
             p.name = "Hip Hop Modern 808 Trap";
             p.category = "Hip Hop";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Booming sustained 808 sub kick with sharp piercing snare and rapid rolling triplet hi-hats.";
             p.bpm = 140.0f;
             p.gridsX = 0.70f; p.gridsY = 0.40f; p.gridsChaos = 0.12f;
@@ -681,7 +732,7 @@ public:
             PresetData p;
             p.name = "Hip Hop Dilla Swing";
             p.category = "Hip Hop";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Heavy unquantized MPC micro-swing pocket, thick organic kick and warm saturated snare crack.";
             p.bpm = 88.0f;
             p.gridsX = 0.38f; p.gridsY = 0.44f; p.gridsChaos = 0.10f;
@@ -707,7 +758,7 @@ public:
             PresetData p;
             p.name = "Hip Hop Neo Soul Pocket";
             p.category = "Hip Hop";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Mellow woodblock rimshots, deep round kick, finger snaps, and silky smooth reverb wash.";
             p.bpm = 90.0f;
             p.gridsX = 0.32f; p.gridsY = 0.30f; p.gridsChaos = 0.06f;
@@ -731,7 +782,7 @@ public:
             PresetData p;
             p.name = "House UK Garage 2-Step";
             p.category = "House";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Shuffling syncopated 2-step hi-hats, tight punchy kick on 1 and delayed on 2, snappy vocal clap.";
             p.bpm = 132.0f;
             p.gridsX = 0.55f; p.gridsY = 0.65f; p.gridsChaos = 0.14f;
@@ -757,7 +808,7 @@ public:
             PresetData p;
             p.name = "House Deep Chicago Velvet";
             p.category = "House";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Warm round 909 kick, classic rimshot, smooth closed hat grooves, and tape saturated bus.";
             p.bpm = 124.0f;
             p.gridsX = 0.50f; p.gridsY = 0.52f; p.gridsChaos = 0.08f;
@@ -786,7 +837,7 @@ public:
             PresetData p;
             p.name = "House French Touch Filter";
             p.category = "House";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Pumping compressed disco drum groove with high-pass and low-pass EQ curves, French electro snap.";
             p.bpm = 126.0f;
             p.gridsX = 0.75f; p.gridsY = 0.65f; p.gridsChaos = 0.10f;
@@ -813,7 +864,7 @@ public:
             PresetData p;
             p.name = "House Minimal Microhouse";
             p.category = "House";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Subtle textured clicks, wooden clave percussions, and hypnotic minimalist house groove.";
             p.bpm = 125.0f;
             p.gridsX = 0.40f; p.gridsY = 0.48f; p.gridsChaos = 0.08f;
@@ -836,7 +887,7 @@ public:
             PresetData p;
             p.name = "DnB Liquid Roller";
             p.category = "Drum & Bass";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "High-speed rolling 16th hats, punchy tight kick, bright snappy snare cutting through the mix.";
             p.bpm = 174.0f;
             p.gridsX = 0.68f; p.gridsY = 0.62f; p.gridsChaos = 0.12f;
@@ -864,7 +915,7 @@ public:
             PresetData p;
             p.name = "DnB Jungle Amen Vibe";
             p.category = "Drum & Bass";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Classic breakbeat engine layout, pitched up snare, ghost notes, and crunchy tape distortion.";
             p.bpm = 168.0f;
             p.gridsX = 0.76f; p.gridsY = 0.70f; p.gridsChaos = 0.22f;
@@ -889,7 +940,7 @@ public:
             PresetData p;
             p.name = "DnB Neurofunk Tech Punch";
             p.category = "Drum & Bass";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Aggressive transient-designed kick and snare with precise surgical EQ and hard clipping.";
             p.bpm = 172.0f;
             p.gridsX = 0.82f; p.gridsY = 0.75f; p.gridsChaos = 0.18f;
@@ -912,7 +963,7 @@ public:
             PresetData p;
             p.name = "DnB Halftime Deep Space";
             p.category = "Drum & Bass";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Heavy half-time groove with deep sub bass drops and cavernous reverb spaces.";
             p.bpm = 86.0f;
             p.gridsX = 0.48f; p.gridsY = 0.58f; p.gridsChaos = 0.14f;
@@ -942,7 +993,7 @@ public:
             PresetData p;
             p.name = "Ambient Zen Garden";
             p.category = "Ambient";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Meditative tuned modal bells, peaceful singing bowl resonances, and long shimmering reverbs.";
             p.bpm = 90.0f;
             p.gridsX = 0.30f; p.gridsY = 0.20f; p.gridsChaos = 0.15f;
@@ -970,7 +1021,7 @@ public:
             PresetData p;
             p.name = "Ambient Ethereal Diffusion";
             p.category = "Ambient";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Slow floating rhythmic textures, generative random Marbles pulses, and atmospheric delays.";
             p.bpm = 75.0f;
             p.gridsX = 0.20f; p.gridsY = 0.18f; p.gridsChaos = 0.20f;
@@ -994,7 +1045,7 @@ public:
             PresetData p;
             p.name = "Tribal Afrobeat Topology";
             p.category = "World";
-            p.author = "MutableDSP";
+            p.author = "mtyas";
             p.description = "Polyrhythmic modal toms, resonant woodblocks, organic shaker hats, and infectious syncopation.";
             p.bpm = 118.0f;
             p.gridsX = 0.65f; p.gridsY = 0.58f; p.gridsChaos = 0.16f;
@@ -1022,4 +1073,4 @@ public:
     }
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

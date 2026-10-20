@@ -1,64 +1,211 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
-//  EQ response curve for the selected channel
+//  EQ response curve for the selected channel, with a draggable point per band.
+//  Drag: frequency (x) and gain (y). Mouse wheel on the Mid point: Q. Double-click: gain to 0 dB.
+//  Each parameter has its own attachment, so the curve redraws the moment a value changes.
 // =====================================================================================
-class EqCurve : public juce::Component {
+class EqCurve : public juce::Component, public juce::SettableTooltipClient {
 public:
-    explicit EqCurve(APVTS& s) : state_(s) { setInterceptsMouseClicks(false, false); }
-    void setVoice(int v) { voice_ = v; repaint(); }
-    void setColour(juce::Colour c) { colour_ = c; }
+    EqCurve(APVTS& s, juce::UndoManager* um) : state_(s), um_(um) {
+        setTooltip("Drag a point to set its frequency and gain.\n"
+                   "Mouse wheel over the Mid point (M) changes its Q.\n"
+                   "Double-click a point to reset its gain to 0 dB.");
+    }
+
+    void setVoice(int v) {
+        using namespace Params;
+        const char* ids[kNumValues] = { V::eqLoF, V::eqLoG, V::eqMidF, V::eqMidQ, V::eqMidG, V::eqHiF, V::eqHiG, V::eqOn };
+        dragging_ = -1;
+        for (int k = 0; k < kNumValues; ++k) {
+            const auto i = static_cast<size_t>(k);
+            params_[i] = dynamic_cast<juce::RangedAudioParameter*>(state_.getParameter(vid(v, ids[k])));
+            atts_[i] = std::make_unique<juce::ParameterAttachment>(*params_[i],
+                [this, i](float x) { values_[i] = x; repaint(); }, um_);
+            atts_[i]->sendInitialUpdate();
+        }
+    }
+    void setColour(juce::Colour c) { colour_ = c; repaint(); }
 
     void paint(juce::Graphics& g) override {
-        auto r = getLocalBounds().toFloat();
-        Theme::wellBox(g, r, 5.0f);
-        auto a = r.reduced(4.0f, 4.0f);
-        auto P = [this](const char* sfx) { return state_.getRawParameterValue(Params::vid(voice_, sfx))->load(); };
-        const bool on = P(Params::V::eqOn) > 0.5f;
+        Theme::wellBox(g, getLocalBounds().toFloat(), 5.0f);
+        const auto a = plotArea();
+        const bool on = values_[kOn] > 0.5f;
         const float sr = 48000.0f;
         Biquad lo, mid, hi;
-        lo.setLowShelf(P(Params::V::eqLoF), P(Params::V::eqLoG), sr);
-        mid.setPeaking(P(Params::V::eqMidF), P(Params::V::eqMidQ), P(Params::V::eqMidG), sr);
-        hi.setHighShelf(P(Params::V::eqHiF), P(Params::V::eqHiG), sr);
+        lo.setLowShelf(values_[kLoF], values_[kLoG], sr);
+        mid.setPeaking(values_[kMidF], values_[kMidQ], values_[kMidG], sr);
+        hi.setHighShelf(values_[kHiF], values_[kHiG], sr);
 
-        // grid: 100 Hz, 1 kHz, 10 kHz and 0 dB
+        // grid: 100 Hz, 1 kHz, 10 kHz and -12 / 0 / +12 dB
         g.setColour(Theme::outline.withAlpha(0.8f));
-        for (float f : { 100.0f, 1000.0f, 10000.0f }) {
-            const float x = a.getX() + a.getWidth() * xFor(f);
-            g.drawVerticalLine(juce::roundToInt(x), a.getY(), a.getBottom());
-        }
+        for (float f : { 100.0f, 1000.0f, 10000.0f })
+            g.drawVerticalLine(juce::roundToInt(xForFreq(f)), a.getY(), a.getBottom());
         g.drawHorizontalLine(juce::roundToInt(a.getCentreY()), a.getX(), a.getRight());
+        g.setColour(Theme::outline.withAlpha(0.35f));
+        for (float db : { -12.0f, 12.0f }) g.drawHorizontalLine(juce::roundToInt(yForDb(db)), a.getX(), a.getRight());
+        g.setColour(Theme::textFaint);
+        g.setFont(Theme::font(9.0f));
+        const std::pair<float, const char*> labels[] = { { 100.0f, "100" }, { 1000.0f, "1k" }, { 10000.0f, "10k" } };
+        for (const auto& [f, t] : labels)
+            g.drawText(t, juce::Rectangle<float>(xForFreq(f) + 2.0f, a.getBottom() - 11.0f, 30.0f, 10.0f), juce::Justification::left);
 
         juce::Path path;
-        const int n = juce::jmax(2, static_cast<int>(a.getWidth()));
+        const int n = juce::jmax(2, static_cast<int>(a.getWidth() / 1.5f));
         for (int i = 0; i < n; ++i) {
             const float t = static_cast<float>(i) / static_cast<float>(n - 1);
-            const float f = 20.0f * std::pow(1000.0f, t);
+            const float f = kMinF * std::pow(kMaxF / kMinF, t);
             float db = 0.0f;
             if (on) db = juce::Decibels::gainToDecibels(lo.magnitudeAt(f, sr) * mid.magnitudeAt(f, sr) * hi.magnitudeAt(f, sr));
-            const float y = a.getCentreY() - juce::jlimit(-20.0f, 20.0f, db) / 20.0f * (a.getHeight() * 0.5f - 2.0f);
             const float x = a.getX() + t * a.getWidth();
-            if (i == 0) path.startNewSubPath(x, y); else path.lineTo(x, y);
+            if (i == 0) path.startNewSubPath(x, yForDb(db)); else path.lineTo(x, yForDb(db));
         }
         juce::Path fill(path);
         fill.lineTo(a.getRight(), a.getCentreY());
         fill.lineTo(a.getX(), a.getCentreY());
         fill.closeSubPath();
-        g.setColour((on ? colour_ : Theme::textFaint).withAlpha(0.15f));
+        const auto col = on ? colour_ : Theme::textFaint;
+        g.setColour(col.withAlpha(0.15f));
         g.fillPath(fill);
-        g.setColour(on ? colour_ : Theme::textFaint);
+        g.setColour(col);
         g.strokePath(path, juce::PathStrokeType(1.6f));
+
+        // Band points
+        static const char* names[3] = { "L", "M", "H" };
+        for (int b = 0; b < 3; ++b) {
+            const auto c = nodePos(b);
+            const bool hot = b == dragging_ || b == hover_;
+            const float rad = hot ? 7.5f : 6.0f;
+            const juce::Rectangle<float> dot(c.x - rad, c.y - rad, rad * 2.0f, rad * 2.0f);
+            g.setColour(Theme::well);
+            g.fillEllipse(dot);
+            g.setColour(hot ? col.brighter(0.4f) : col);
+            g.drawEllipse(dot, hot ? 2.0f : 1.5f);
+            g.setFont(Theme::font(9.0f, true));
+            g.drawText(names[b], dot, juce::Justification::centred);
+        }
+
+        // Read-out of the band being dragged or hovered
+        const int shown = dragging_ >= 0 ? dragging_ : hover_;
+        if (shown >= 0) {
+            juce::String txt = bandName(shown) + "  " + text(fIdx(shown)) + "  " + text(gIdx(shown));
+            if (shown == 1) txt << "  Q " << text(kMidQ);
+            g.setFont(Theme::font(10.5f, true));
+            g.setColour(Theme::text);
+            g.drawText(txt, a.reduced(4.0f, 1.0f).removeFromTop(13.0f), juce::Justification::centredRight);
+        }
+    }
+
+    void mouseMove(const juce::MouseEvent& e) override { setHover(hitNode(e.position)); }
+    void mouseExit(const juce::MouseEvent&) override { setHover(-1); }
+
+    void mouseDown(const juce::MouseEvent& e) override {
+        dragging_ = hitNode(e.position);
+        if (dragging_ < 0) return;
+        att(fIdx(dragging_)).beginGesture();
+        att(gIdx(dragging_)).beginGesture();
+        grabOffset_ = nodePos(dragging_) - e.position;
+        repaint();
+    }
+
+    void mouseDrag(const juce::MouseEvent& e) override {
+        if (dragging_ < 0) return;
+        const auto pos = e.position + grabOffset_;
+        setPlain(fIdx(dragging_), freqForX(pos.x), true);
+        setPlain(gIdx(dragging_), dbForY(pos.y), true);
+    }
+
+    void mouseUp(const juce::MouseEvent&) override {
+        if (dragging_ < 0) return;
+        att(fIdx(dragging_)).endGesture();
+        att(gIdx(dragging_)).endGesture();
+        dragging_ = -1;
+        repaint();
+    }
+
+    void mouseDoubleClick(const juce::MouseEvent& e) override {
+        const int b = hitNode(e.position);
+        if (b >= 0) setPlain(gIdx(b), 0.0f, false);
+    }
+
+    void mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& w) override {
+        if (hitNode(e.position) != 1 || std::abs(w.deltaY) < 1.0e-4f) return;
+        const float dir = w.isReversed ? -w.deltaY : w.deltaY;
+        setPlain(kMidQ, values_[kMidQ] * std::pow(1.25f, dir * 4.0f), false);
     }
 
 private:
-    static float xFor(float f) { return std::log(f / 20.0f) / std::log(1000.0f); }
+    enum { kLoF, kLoG, kMidF, kMidQ, kMidG, kHiF, kHiG, kOn, kNumValues };
+    static constexpr float kMinF = 20.0f, kMaxF = 20000.0f, kRangeDb = 20.0f;
+
+    static int fIdx(int band) { return band == 0 ? kLoF : (band == 1 ? kMidF : kHiF); }
+    static int gIdx(int band) { return band == 0 ? kLoG : (band == 1 ? kMidG : kHiG); }
+    static juce::String bandName(int band) { return band == 0 ? "LOW" : (band == 1 ? "MID" : "HIGH"); }
+    juce::ParameterAttachment& att(int k) { return *atts_[static_cast<size_t>(k)]; }
+
+    juce::Rectangle<float> plotArea() const { return getLocalBounds().toFloat().reduced(4.0f, 4.0f); }
+    float halfSpan() const { return plotArea().getHeight() * 0.5f - 7.0f; }
+    float xForFreq(float f) const {
+        const auto a = plotArea();
+        return a.getX() + a.getWidth() * std::log(f / kMinF) / std::log(kMaxF / kMinF);
+    }
+    float freqForX(float x) const {
+        const auto a = plotArea();
+        return kMinF * std::pow(kMaxF / kMinF, juce::jlimit(0.0f, 1.0f, (x - a.getX()) / a.getWidth()));
+    }
+    float yForDb(float db) const { return plotArea().getCentreY() - juce::jlimit(-kRangeDb, kRangeDb, db) / kRangeDb * halfSpan(); }
+    float dbForY(float y) const { return (plotArea().getCentreY() - y) / halfSpan() * kRangeDb; }
+    juce::Point<float> nodePos(int band) const {
+        return { xForFreq(values_[static_cast<size_t>(fIdx(band))]), yForDb(values_[static_cast<size_t>(gIdx(band))]) };
+    }
+    int hitNode(juce::Point<float> p) const {
+        int best = -1;
+        float bestD = 14.0f;
+        for (int b = 0; b < 3; ++b) {
+            const float d = nodePos(b).getDistanceFrom(p);
+            if (d < bestD) { bestD = d; best = b; }
+        }
+        return best;
+    }
+    void setHover(int b) {
+        if (b == hover_) return;
+        hover_ = b;
+        setMouseCursor(b >= 0 ? juce::MouseCursor::DraggingHandCursor : juce::MouseCursor::NormalCursor);
+        repaint();
+    }
+    void setPlain(int k, float v, bool inGesture) {
+        auto* p = params_[static_cast<size_t>(k)];
+        if (p == nullptr) return;
+        const auto& range = p->getNormalisableRange();
+        v = range.snapToLegalValue(juce::jlimit(range.start, range.end, v));
+        if (inGesture) att(k).setValueAsPartOfGesture(v);
+        else att(k).setValueAsCompleteGesture(v);
+    }
+    juce::String text(int k) const {
+        auto* p = params_[static_cast<size_t>(k)];
+        return p != nullptr ? p->getCurrentValueAsText() : juce::String();
+    }
+
     APVTS& state_;
-    int voice_{ 0 };
+    juce::UndoManager* um_;
+    int dragging_{ -1 }, hover_{ -1 };
+    juce::Point<float> grabOffset_;
     juce::Colour colour_{ Theme::accent };
+    std::array<float, kNumValues> values_{ 100.0f, 0.0f, 1200.0f, 1.0f, 0.0f, 8000.0f, 0.0f, 1.0f };
+    std::array<juce::RangedAudioParameter*, kNumValues> params_{};
+    std::array<std::unique_ptr<juce::ParameterAttachment>, kNumValues> atts_;
 };
 
 // =====================================================================================
@@ -125,10 +272,10 @@ private:
 // =====================================================================================
 class VoicePage : public juce::Component {
 public:
-    explicit VoicePage(MutableDrumsAudioProcessor& p) : proc_(p), state_(p.getAPVTS()), eq_(state_) {
+    explicit VoicePage(MutadrumsAudioProcessor& p) : proc_(p), state_(p.getAPVTS()), eq_(state_, &p.getUndoManager()) {
         for (auto* c : std::initializer_list<juce::Component*>{ &engine_, &trig_, &choke_, &note_,
                                                                 &tune_, &decay_, &tone_, &char_, &level_, &pan_,
-                                                                &send1_, &send2_, &lfoRate_, &lfoShape_,
+                                                                &send1_, &send2_, &out_, &lfoRate_, &lfoShape_,
                                                                 &eqOn_, &eq_, &eqLoF_, &eqLoG_, &eqMidF_, &eqMidQ_, &eqMidG_, &eqHiF_, &eqHiG_,
                                                                 &drvOn_, &drvMode_, &drive_, &drvTone_, &drvTrim_,
                                                                 &cmpOn_, &cmpThr_, &cmpRat_, &cmpAtk_, &cmpRel_, &cmpMak_ })
@@ -147,6 +294,9 @@ public:
         pan_.setTooltipText("Stereo position");
         send1_.setTooltipText("How much of this voice goes to the Delay");
         send2_.setTooltipText("How much of this voice goes to the Reverb");
+        out_.combo.setTooltip("Which plugin output this voice plays through. Enable Out 2-8 in your DAW "
+                              "to give voices their own mixer channels; a disabled output falls back to Main.\n"
+                              "Delay and reverb returns always play on Main.");
         pan_.setBipolar(true);
         tune_.setBipolar(true);
         eqLoG_.setBipolar(true); eqMidG_.setBipolar(true); eqHiG_.setBipolar(true); drvTrim_.setBipolar(true);
@@ -176,6 +326,7 @@ public:
         pan_.attach(state_, vid(voice_, V::pan), um);
         send1_.attach(state_, vid(voice_, V::send1), um);
         send2_.attach(state_, vid(voice_, V::send2), um);
+        out_.attach(state_, vid(voice_, V::out), um);
         eqOn_.attach(state_, vid(voice_, V::eqOn), um);
         eqLoF_.attach(state_, vid(voice_, V::eqLoF), um);
         eqLoG_.attach(state_, vid(voice_, V::eqLoG), um);
@@ -224,7 +375,6 @@ public:
 
         const float gr = proc_.getChannelGR(voice_);
         if (std::abs(gr - gr_) > 0.05f || ++frame_ % 4 == 0) { gr_ = gr; repaint(grArea_); }
-        if (frame_ % 3 == 0) eq_.repaint();
     }
 
     void paint(juce::Graphics& g) override {
@@ -317,7 +467,7 @@ public:
         }
         {
             auto a = sendArea_.reduced(10, 0);
-            a.removeFromTop(28);
+            out_.setBounds(a.removeFromTop(30).removeFromRight(96).reduced(0, 4));
             a.removeFromBottom(8);
             const int w = a.getWidth() / 4;
             level_.setBounds(a.removeFromLeft(w));
@@ -338,7 +488,7 @@ public:
             auto a = eqArea_.reduced(10, 0);
             auto head = a.removeFromTop(30);
             eqOn_.setBounds(head.removeFromRight(44).reduced(0, 6));
-            eq_.setBounds(a.removeFromTop(64));
+            eq_.setBounds(a.removeFromTop(100));
             a.removeFromTop(4);
             const int w = a.getWidth() / 7;
             for (auto* k : { &eqLoF_, &eqLoG_, &eqMidF_, &eqMidQ_, &eqMidG_, &eqHiF_ }) k->setBounds(a.removeFromLeft(w).withHeight(78));
@@ -385,14 +535,14 @@ private:
         repaint();
     }
 
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     APVTS& state_;
     int voice_{ 0 }, engineIdx_{ 0 }, frame_{ 0 };
     float gr_{ 0.0f };
 
     juce::Rectangle<int> soundArea_, blurbArea_, modArea_, sendArea_, eqArea_, drvArea_, cmpArea_, lfoLabel_, grArea_, grLabel_;
 
-    ChoiceBox engine_{ "Engine" }, trig_{ "Trigger" }, choke_{ "Choke" }, note_{ "MIDI Note" };
+    ChoiceBox engine_{ "Engine" }, trig_{ "Trigger" }, choke_{ "Choke" }, note_{ "MIDI Note" }, out_;
     Knob tune_{ "Tune" }, decay_{ "Decay" }, tone_{ "Tone" }, char_{ "Character" };
     Knob level_{ "Level", Theme::text }, pan_{ "Pan", Theme::text }, send1_{ "Delay", Theme::marblesT(0) }, send2_{ "Reverb", Theme::marblesT(1) };
 
@@ -409,4 +559,4 @@ private:
     std::unique_ptr<juce::ParameterAttachment> engineWatch_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

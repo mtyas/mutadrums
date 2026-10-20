@@ -1,16 +1,26 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 class HeaderBar : public juce::Component {
 public:
-    explicit HeaderBar(MutableDrumsAudioProcessor& p) : proc_(p) {
+    explicit HeaderBar(MutadrumsAudioProcessor& p) : proc_(p) {
         auto& s = p.getAPVTS();
         auto* um = &p.getUndoManager();
 
-        for (auto* b : { &prev_, &next_, &presetName_, &save_, &undo_, &redo_ }) addAndMakeVisible(b);
+        for (auto* b : { &prev_, &next_, &presetName_, &save_, &undo_, &redo_, &about_ }) addAndMakeVisible(b);
+        about_.setTooltip("How Mutadrums works, and credits");
+        about_.onClick = [this] { if (onAbout) onAbout(); };
         prev_.setTooltip("Previous preset");
         next_.setTooltip("Next preset");
         presetName_.setTooltip("Browse presets");
@@ -42,6 +52,7 @@ public:
 
     std::function<void(bool focusSave)> onBrowse;
     std::function<void()> onPresetChanged;
+    std::function<void()> onAbout;
 
     void refresh() {
         presetName_.setButtonText(proc_.getCurrentPresetName());
@@ -64,12 +75,17 @@ public:
         g.drawHorizontalLine(getHeight() - 1, 0.0f, static_cast<float>(getWidth()));
 
         auto logo = logoArea_;
-        g.setFont(Theme::font(20.0f, true).withExtraKerningFactor(0.06f));
+        const auto logoFont = Theme::font(20.0f, true).withExtraKerningFactor(0.06f);
+        g.setFont(logoFont);
         g.setColour(Theme::text);
-        const int w1 = Theme::font(20.0f, true).withExtraKerningFactor(0.06f).getStringWidth("MUTABLE");
-        g.drawText("MUTABLE", logo.removeFromLeft(w1 + 6), juce::Justification::centredLeft);
+        const int w1 = logoFont.getStringWidth("MUTA");
+        g.drawText("MUTA", logo.removeFromLeft(w1 + 2), juce::Justification::centredLeft);
         g.setColour(Theme::accent);
-        g.drawText("DRUMS", logo, juce::Justification::centredLeft);
+        const int w2 = logoFont.getStringWidth("DRUMS");
+        g.drawText("DRUMS", logo.removeFromLeft(w2 + 8), juce::Justification::centredLeft);
+        g.setColour(Theme::textFaint);
+        g.setFont(Theme::font(10.5f));
+        g.drawText("by mtyas", logo.withTrimmedTop(5), juce::Justification::centredLeft);
 
         // Running lamp
         auto lamp = lampArea_.toFloat();
@@ -85,7 +101,7 @@ public:
         auto r = getLocalBounds().reduced(14, 10);
         logoArea_ = r.removeFromLeft(196);
 
-        auto presetBox = r.removeFromLeft(430);
+        auto presetBox = r.removeFromLeft(390);
         prev_.setBounds(presetBox.removeFromLeft(32));
         presetBox.removeFromLeft(4);
         save_.setBounds(presetBox.removeFromRight(58));
@@ -98,6 +114,8 @@ public:
         undo_.setBounds(r.removeFromLeft(54));
         r.removeFromLeft(4);
         redo_.setBounds(r.removeFromLeft(54));
+        r.removeFromLeft(4);
+        about_.setBounds(r.removeFromLeft(60));
 
         // right side: master
         auto meters = r.removeFromRight(10);
@@ -127,9 +145,9 @@ private:
         if (onPresetChanged) onPresetChanged();
     }
 
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     juce::Rectangle<int> logoArea_, lampArea_, masterLabel_;
-    juce::TextButton prev_{ "<" }, next_{ ">" }, presetName_{ "Init" }, save_{ "Save" }, undo_{ "Undo" }, redo_{ "Redo" };
+    juce::TextButton prev_{ "<" }, next_{ ">" }, presetName_{ "Init" }, save_{ "Save" }, undo_{ "Undo" }, redo_{ "Redo" }, about_{ "About" };
     ToggleChip run_{ "RUNNING", Theme::ok }, hostSync_{ "HOST SYNC" };
     DragNumber bpm_;
     Knob master_{ {}, Theme::accent };
@@ -137,4 +155,4 @@ private:
     bool lastRunning_{ false };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

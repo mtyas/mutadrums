@@ -1,15 +1,23 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
 //  One pad per voice: click to select + audition. Shows engine, trigger, activity, M/S.
 // =====================================================================================
 class VoicePad : public juce::Component, public juce::SettableTooltipClient {
 public:
-    VoicePad(MutableDrumsAudioProcessor& p, int index) : proc_(p), index_(index) {
+    VoicePad(MutadrumsAudioProcessor& p, int index) : proc_(p), index_(index) {
         auto& s = p.getAPVTS();
         auto* um = &p.getUndoManager();
         mute_.attach(s, Params::vid(index, Params::V::mute), um);
@@ -96,7 +104,7 @@ public:
     }
 
 private:
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
     int index_;
     int engine_{ 0 }, trig_{ 0 };
     bool selected_{ false };
@@ -108,7 +116,7 @@ private:
 
 class VoicePads : public juce::Component {
 public:
-    explicit VoicePads(MutableDrumsAudioProcessor& p) {
+    explicit VoicePads(MutadrumsAudioProcessor& p) {
         for (int i = 0; i < Params::kNumVoices; ++i) {
             auto* pad = pads_.add(new VoicePad(p, i));
             pad->onSelect = [this](int idx) { if (onSelect) onSelect(idx); };
@@ -134,4 +142,4 @@ private:
     juce::OwnedArray<VoicePad> pads_;
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

@@ -1,3 +1,13 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+//
+// Based on Mutable Instruments Marbles by Emilie Gillet (MIT licence).
+
 #pragma once
 #include <cstdint>
 #include <cmath>
@@ -5,7 +15,7 @@
 #include <random>
 #include <vector>
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 class MarblesSequencer {
 public:
@@ -198,4 +208,4 @@ private:
     std::mt19937 rng_{ 4242 };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

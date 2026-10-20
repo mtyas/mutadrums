@@ -1,13 +1,21 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include "Widgets.h"
 #include "../PluginProcessor.h"
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // Echo-train picture: bars above the line = left, below = right
 class DelayViz : public juce::Component {
 public:
-    DelayViz(MutableDrumsAudioProcessor& p) : proc_(p) { setInterceptsMouseClicks(false, false); }
+    DelayViz(MutadrumsAudioProcessor& p) : proc_(p) { setInterceptsMouseClicks(false, false); }
     void paint(juce::Graphics& g) override {
         auto r = getLocalBounds().toFloat();
         Theme::wellBox(g, r);
@@ -50,13 +58,13 @@ public:
         g.drawText(Params::msText(ms, 0), a.removeFromTop(16.0f), juce::Justification::centredRight);
     }
 private:
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
 };
 
 // Decay-envelope picture for the reverb
 class ReverbViz : public juce::Component {
 public:
-    ReverbViz(MutableDrumsAudioProcessor& p) : proc_(p) { setInterceptsMouseClicks(false, false); }
+    ReverbViz(MutadrumsAudioProcessor& p) : proc_(p) { setInterceptsMouseClicks(false, false); }
     void paint(juce::Graphics& g) override {
         auto r = getLocalBounds().toFloat();
         Theme::wellBox(g, r);
@@ -102,12 +110,12 @@ public:
         g.drawText("RT60  " + juce::String(rt, 1) + " s", a.removeFromTop(16.0f), juce::Justification::centredRight);
     }
 private:
-    MutableDrumsAudioProcessor& proc_;
+    MutadrumsAudioProcessor& proc_;
 };
 
 class FxPage : public juce::Component {
 public:
-    explicit FxPage(MutableDrumsAudioProcessor& p) : delayViz_(p), reverbViz_(p) {
+    explicit FxPage(MutadrumsAudioProcessor& p) : delayViz_(p), reverbViz_(p) {
         auto& s = p.getAPVTS();
         auto* um = &p.getUndoManager();
         using namespace Params;
@@ -214,4 +222,4 @@ private:
     int frame_{ 0 };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

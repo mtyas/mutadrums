@@ -1,9 +1,17 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <vector>
 #include <cmath>
 #include <algorithm>
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // =====================================================================================
 //  FxDelay — stereo / ping-pong tape-flavoured delay
@@ -198,4 +206,4 @@ private:
     float wowPhase_{ 0.0f };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

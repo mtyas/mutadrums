@@ -1,9 +1,17 @@
+// Mutadrums - generative drum machine
+// Copyright (C) 2026 mtyas
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// This program is free software: you can redistribute it and/or modify it under the terms of the
+// GNU General Public License as published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version. See the LICENSE file for details.
+
 #pragma once
 #include <cmath>
 #include <algorithm>
 #include <complex>
 
-namespace MutableDrums {
+namespace Mutadrums {
 
 // Biquad filter for EQ
 class Biquad {
@@ -175,6 +183,7 @@ public:
         compressor_.init(sampleRate);
         compressor_.setParameters(compThresh_, compRatio_, compAttackMs_, compReleaseMs_, compMakeupDB_);
         smoothCoeff_ = 1.0f - std::exp(-1.0f / (0.012f * sampleRate)); // ~12 ms parameter smoothing
+        eqSmoothCoeff_ = 1.0f - std::exp(-static_cast<float>(kEqBlock) / (0.03f * sampleRate)); // ~30 ms EQ glide
         meterDecay_ = std::exp(-1.0f / (0.25f * sampleRate));
         updateEQ();
         updateDriveTone();
@@ -188,6 +197,9 @@ public:
         driveLP_.reset();
         driveShelf_.reset();
         compressor_.reset();
+        eqCur_ = eqTgt_;
+        eqCounter_ = 0;
+        updateEQ();
         peakLevel_ = 0.0f;
         gainL_ = targetGainL_;
         gainR_ = targetGainR_;
@@ -195,15 +207,12 @@ public:
         send2_ = send2Target_;
     }
 
-    // ---- EQ
+    // ---- EQ. Values glide towards the new target (see stepEQ) so sweeping a band never zippers.
     void setEQ(float lowF, float lowG, float midF, float midQ, float midG, float highF, float highG) {
-        if (lowF == eqLowFreq_ && lowG == eqLowGain_ && midF == eqMidFreq_ && midQ == eqMidQ_ &&
-            midG == eqMidGain_ && highF == eqHighFreq_ && highG == eqHighGain_)
-            return;
-        eqLowFreq_ = lowF; eqLowGain_ = lowG;
-        eqMidFreq_ = midF; eqMidQ_ = midQ; eqMidGain_ = midG;
-        eqHighFreq_ = highF; eqHighGain_ = highG;
-        updateEQ();
+        const EqValues t{ std::log2(lowF), lowG, std::log2(midF), std::log2(midQ), midG, std::log2(highF), highG };
+        if (t == eqTgt_) return;
+        eqTgt_ = t;
+        eqMoving_ = true;
     }
     void setEQEnabled(bool on) { eqOn_ = on; }
 
@@ -251,6 +260,7 @@ public:
     inline void process(float drySample, float& outL, float& outR, float& aux1Out, float& aux2Out) {
         float s = drySample;
 
+        if (eqMoving_ && ++eqCounter_ >= kEqBlock) { eqCounter_ = 0; stepEQ(); }
         if (eqOn_) {
             s = eqLow_.process(s);
             s = eqMid_.process(s);
@@ -288,10 +298,32 @@ public:
     }
 
 private:
+    // EQ settings, frequencies and Q in log2 so they glide evenly across octaves
+    struct EqValues {
+        float loF, loG, midF, midQ, midG, hiF, hiG;
+        bool operator==(const EqValues& o) const {
+            return loF == o.loF && loG == o.loG && midF == o.midF && midQ == o.midQ && midG == o.midG && hiF == o.hiF && hiG == o.hiG;
+        }
+    };
+    static constexpr int kEqBlock = 16; // recompute coefficients every 16 samples while moving
+
+    void stepEQ() {
+        float* c = &eqCur_.loF;
+        const float* t = &eqTgt_.loF;
+        bool settled = true;
+        for (int k = 0; k < 7; ++k) {
+            const float d = t[k] - c[k];
+            if (std::abs(d) < 1.0e-3f) c[k] = t[k];
+            else { c[k] += eqSmoothCoeff_ * d; settled = false; }
+        }
+        updateEQ();
+        eqMoving_ = !settled;
+    }
+
     void updateEQ() {
-        eqLow_.setLowShelf(eqLowFreq_, eqLowGain_, sampleRate_);
-        eqMid_.setPeaking(eqMidFreq_, eqMidQ_, eqMidGain_, sampleRate_);
-        eqHigh_.setHighShelf(eqHighFreq_, eqHighGain_, sampleRate_);
+        eqLow_.setLowShelf(std::exp2(eqCur_.loF), eqCur_.loG, sampleRate_);
+        eqMid_.setPeaking(std::exp2(eqCur_.midF), std::exp2(eqCur_.midQ), eqCur_.midG, sampleRate_);
+        eqHigh_.setHighShelf(std::exp2(eqCur_.hiF), eqCur_.hiG, sampleRate_);
     }
 
     // Drive "Tone": below 0.5 progressively darkens (lowpass 20k -> 1.5k),
@@ -321,9 +353,11 @@ private:
     float smoothCoeff_{ 0.002f };
     float meterDecay_{ 0.9999f };
 
-    float eqLowFreq_{ 100.0f }, eqLowGain_{ 0.0f };
-    float eqMidFreq_{ 1200.0f }, eqMidQ_{ 1.0f }, eqMidGain_{ 0.0f };
-    float eqHighFreq_{ 8000.0f }, eqHighGain_{ 0.0f };
+    EqValues eqTgt_{ 6.643856f, 0.0f, 10.228819f, 0.0f, 0.0f, 12.965784f, 0.0f }; // 100 Hz, 1.2 kHz Q1, 8 kHz
+    EqValues eqCur_{ eqTgt_ };
+    float eqSmoothCoeff_{ 0.03f };
+    int eqCounter_{ 0 };
+    bool eqMoving_{ false };
     bool eqOn_{ true };
     Biquad eqLow_, eqMid_, eqHigh_;
 
@@ -342,4 +376,4 @@ private:
     float peakLevel_{ 0.0f };
 };
 
-} // namespace MutableDrums
+} // namespace Mutadrums

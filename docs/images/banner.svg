@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Mutadrums - generative drum machine by mtyas">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#161920"/>
+      <stop offset="1" stop-color="#0b0d11"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffb547" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#ffb547" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="300" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="300" rx="18" fill="url(#glow)"/>
+  <rect x="0.5" y="0.5" width="1199" height="299" rx="18" fill="none" stroke="#272c37"/>
+
+  <!-- wordmark -->
+  <g font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-weight="700" letter-spacing="6">
+    <text x="70" y="150" font-size="84" fill="#e7e9ee">MUTA<tspan fill="#ffb547">DRUMS</tspan></text>
+  </g>
+  <text x="74" y="196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#8a92a3">Generative 8-voice drum machine  ·  CLAP / VST3 / Standalone</text>
+  <text x="74" y="236" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" fill="#5a6170">by mtyas  ·  after the Mutable Instruments designs of Émilie Gillet</text>
+
+  <!-- 8 voices x 16 steps -->
+  <g transform="translate(820 58)">
+    <!-- rows drawn as hits (coloured) on a faint grid -->
+    <g fill="#ff6b5b"><rect x="0" y="0" width="16" height="16" rx="4"/><rect x="80" y="0" width="16" height="16" rx="4"/><rect x="160" y="0" width="16" height="16" rx="4"/><rect x="220" y="0" width="16" height="16" rx="4" opacity="0.55"/><rect x="240" y="0" width="16" height="16" rx="4"/></g>
+    <g fill="#ffa94d"><rect x="80" y="24" width="16" height="16" rx="4"/><rect x="240" y="24" width="16" height="16" rx="4"/><rect x="280" y="24" width="16" height="16" rx="4" opacity="0.55"/></g>
+    <g fill="#ffd43b"><rect x="0" y="48" width="16" height="16" rx="4" opacity="0.55"/><rect x="40" y="48" width="16" height="16" rx="4"/><rect x="80" y="48" width="16" height="16" rx="4" opacity="0.55"/><rect x="120" y="48" width="16" height="16" rx="4"/><rect x="160" y="48" width="16" height="16" rx="4" opacity="0.55"/><rect x="200" y="48" width="16" height="16" rx="4"/><rect x="240" y="48" width="16" height="16" rx="4" opacity="0.55"/><rect x="280" y="48" width="16" height="16" rx="4"/></g>
+    <g fill="#9be36d"><rect x="60" y="72" width="16" height="16" rx="4"/><rect x="180" y="72" width="16" height="16" rx="4"/></g>
+    <g fill="#3fd5b6"><rect x="100" y="96" width="16" height="16" rx="4"/><rect x="260" y="96" width="16" height="16" rx="4"/></g>
+    <g fill="#4dabf7"><rect x="20" y="120" width="16" height="16" rx="4" opacity="0.55"/><rect x="140" y="120" width="16" height="16" rx="4"/><rect x="200" y="120" width="16" height="16" rx="4" opacity="0.55"/></g>
+    <g fill="#9d7bff"><rect x="60" y="144" width="16" height="16" rx="4"/><rect x="220" y="144" width="16" height="16" rx="4"/></g>
+    <g fill="#f783c6"><rect x="0" y="168" width="16" height="16" rx="4" opacity="0.55"/><rect x="160" y="168" width="16" height="16" rx="4"/></g>
+    <!-- step grid -->
+    <g fill="#ffffff" opacity="0.05">
+      <rect x="0" y="0" width="316" height="184" rx="6" fill="none" stroke="#ffffff" stroke-opacity="0.6"/>
+      <rect x="78" y="-6" width="1" height="196"/><rect x="158" y="-6" width="1" height="196"/><rect x="238" y="-6" width="1" height="196"/>
+    </g>
+  </g>
+</svg>
