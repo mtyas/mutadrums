@@ -21,6 +21,11 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    # MACOSX_DEPLOYMENT_TARGET also reaches JUCE's juceaide helper, which is built during configure;
+    # without it the helper targets the newest SDK, where JUCE 7 uses an API Apple has since removed.
+    # (Ignored on Windows and Linux.)
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
     strategy:
       fail-fast: false
       matrix:
@@ -32,7 +37,7 @@ jobs:
           - name: macOS
             os: macos-latest
             slug: macos
-            configure: -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+            configure: -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
           - name: Linux
             os: ubuntu-22.04
             slug: linux

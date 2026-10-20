@@ -45,7 +45,7 @@ This builds every format. To build just one, add a target:
 cmake --build build --config Release --target Mutadrums_CLAP
 ```
 
-On macOS, add `-G Xcode` to the configure step if you prefer an Xcode project, and `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` for a universal binary.
+On macOS, add `-G Xcode` to the configure step if you prefer an Xcode project, and `-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"` for a universal binary. With Xcode 16 or newer, also set `MACOSX_DEPLOYMENT_TARGET=11.0` in the environment before configuring (JUCE 7 needs it to build its helper tool).
 
 ## Install
 
