@@ -1,0 +1,30 @@
+Mutadrums by mtyas - https://github.com/mtyas/mutadrums
+Free software under the GNU GPL v3 or later (see LICENSE.txt).
+
+INSTALLING
+==========
+
+Close your DAW (or any project using Mutadrums) first, then copy the plugin(s):
+
+Windows
+  Mutadrums.clap  ->  C:\Program Files\Common Files\CLAP\
+  Mutadrums.vst3  ->  C:\Program Files\Common Files\VST3\
+  Mutadrums.exe   ->  anywhere (standalone app)
+
+macOS
+  Mutadrums.clap  ->  ~/Library/Audio/Plug-Ins/CLAP/
+  Mutadrums.vst3  ->  ~/Library/Audio/Plug-Ins/VST3/
+  Mutadrums.app   ->  /Applications
+  The builds are not notarised. If macOS says the plugin is damaged or can't be
+  opened, remove the download quarantine once in Terminal:
+    xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/CLAP/Mutadrums.clap
+    xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/Mutadrums.vst3
+    xattr -dr com.apple.quarantine /Applications/Mutadrums.app
+
+Linux
+  Mutadrums.clap  ->  ~/.clap/
+  Mutadrums.vst3  ->  ~/.vst3/
+  Mutadrums       ->  anywhere (standalone app; chmod +x if needed)
+
+Then rescan plugins in your DAW. The user guide is at
+https://github.com/mtyas/mutadrums/blob/main/docs/user-guide.md
